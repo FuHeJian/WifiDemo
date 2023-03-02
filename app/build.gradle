@@ -1,0 +1,88 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.example.wifidemo1'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.example.wifidemo1"
+        minSdk 28
+        targetSdk 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        viewBinding true
+    }
+
+    dataBinding {
+        enabled = true;
+    }
+
+    //解决依赖冲突，统一版本
+    applicationVariants.all { variant ->
+        // Return compile configuration objects of a variant.
+        variant.getCompileConfiguration().resolutionStrategy {
+            // Use Gradle's ResolutionStrategy API
+            // to customize how this variant resolves dependencies.
+
+        }
+        // Return runtime configuration objects of a variant.
+        variant.getRuntimeConfiguration().resolutionStrategy {
+            eachDependency { DependencyResolveDetails details ->
+
+                //specifying a fixed version for all libraries with 'org.gradle' group
+                if (details.requested.group == "androidx.lifecycle") {
+                    details.useVersion '2.5.0'
+                }
+            }
+        }
+        // Return annotation processor configuration of a variant.
+        variant.getAnnotationProcessorConfiguration().resolutionStrategy {
+
+        }
+    }
+
+}
+
+
+dependencies {
+
+    def navigationVersion = "2.4.0"
+    runtimeOnly 'androidx.core:core-ktx:1.9.0'
+    implementation 'com.google.android.material:material:1.8.0'
+//    noinspection GradleDependency
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigationVersion"
+//    noinspection GradleDependency
+    implementation "androidx.navigation:navigation-ui-ktx:$navigationVersion"
+
+    //rxjava
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+
+    //okhttp
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+}

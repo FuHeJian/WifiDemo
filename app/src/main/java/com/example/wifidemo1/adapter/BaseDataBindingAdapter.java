@@ -14,8 +14,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T,RecyclerView.ViewHolder> {
-
-    ///ssssssssssssssss
+    
     protected BaseDataBindingAdapter(@NonNull DiffUtil.ItemCallback diffCallback) {
         super(diffCallback);
     }

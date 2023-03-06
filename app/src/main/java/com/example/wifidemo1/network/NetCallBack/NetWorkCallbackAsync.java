@@ -25,11 +25,11 @@ public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
 
     private Scheduler.Worker mWorker = Schedulers.io().createWorker();
 
-    public NetWorkCallbackAsync(@NonNull AvailableNetworkListener listener, List<Integer> capabilities, @NonNull Match match) {
+    public NetWorkCallbackAsync(@NonNull AvailableNetworkListener listener, @NonNull Match match) {
         mListener = listener;
-        if (capabilities != null && capabilities.size() > 0) {
+/*        if (capabilities != null && capabilities.size() > 0) {
             mCapabilities = capabilities;
-        }
+        }*/
         mMatch = match;
     }
 
@@ -42,10 +42,7 @@ public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
             public void run() {
                 boolean matched = true;
 
-                for (int capabilities : mCapabilities) {
-                    matched = matched && mMatch.match(network, capabilities);
-                    if (!matched) break;
-                }
+                matched = matched && mMatch.match(network);
 
                 if (mListener.mNetworkIsEmpty && matched) {
                     mListener.onSuccess(network);
@@ -90,19 +87,23 @@ public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
          *
          * @param network 更新后的NetWork
          */
-        abstract public void onUpdate(Network network);
+        public void onUpdate(Network network){
+
+        };
 
         /**
          * 找到的网络与要求的不匹配
          *
          * @param network 不匹配的网络，但是目前最好的
          */
-        abstract public void onNotMatchNeedNetWork(Network network);
+        public void onNotMatchNeedNetWork(Network network){
+
+        };
 
     }
 
     public interface Match {
-        public boolean match(Network network, int capabilities);
+        public boolean match(Network network);
     }
 
 }

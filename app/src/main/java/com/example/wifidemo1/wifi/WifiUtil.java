@@ -2,6 +2,7 @@ package com.example.wifidemo1.wifi;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.MacAddress;
 import android.net.Network;
@@ -14,7 +15,10 @@ import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.wifidemo1.broadcaster.BroadcasterUtil;
+import com.example.wifidemo1.broadcaster.WiFiReceiverJava;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.network.NetCallBack.NetWorkCallbackAsync;
 import com.example.wifidemo1.permission.PermissionUtil;
@@ -60,6 +64,7 @@ public class WifiUtil {
     /**
      * 连接指定wifi
      * listener中的方法是异步执行
+     *
      * @param context
      * @param name
      * @param bssid
@@ -80,9 +85,9 @@ public class WifiUtil {
                     .build();
 
             //配置异步callback
-            List<Integer> capabilities = new ArrayList<>();
-            capabilities.add(NetworkCapabilities.TRANSPORT_WIFI);
-            ConnectivityManager.NetworkCallback callback =  getDefaultCallback(listener,capabilities,connectivityManager);
+            List<Integer> transPorts = new ArrayList<>();
+            transPorts.add(NetworkCapabilities.TRANSPORT_WIFI);
+            ConnectivityManager.NetworkCallback callback = getDefaultCallback(listener, null, transPorts, connectivityManager);
 
             //尝试使用指定的network向互联网访问
             //请求连接
@@ -111,7 +116,8 @@ public class WifiUtil {
 
         List<Integer> capabilities = new ArrayList<>();
         capabilities.add(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-       ConnectivityManager.NetworkCallback callback =  getDefaultCallback(listener,capabilities,connectivityManager);
+
+        ConnectivityManager.NetworkCallback callback = getDefaultCallback(listener, capabilities, null, connectivityManager);
 
         //请求获取匹配networkRequest的最佳网络
         //如果没有找到networkRequest的要求的网络，还会自行去寻找合适的网络进行返回,，如果获取到的网络必须满足某项需求
@@ -122,6 +128,7 @@ public class WifiUtil {
 
     /**
      * NetWork 的 capability 是否与指定的Capability 是否匹配  只能匹配单个
+     *
      * @param connectivityManager
      * @param netWork
      * @param capability
@@ -133,6 +140,7 @@ public class WifiUtil {
 
     /**
      * NetWork 的 capability 是否与指定的Capability 是否匹配 匹配多个
+     *
      * @param connectivityManager
      * @param netWork
      * @param capabilities
@@ -141,27 +149,68 @@ public class WifiUtil {
     public boolean networkIsMatchList(ConnectivityManager connectivityManager, Network netWork, List<Integer> capabilities) {
         NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(netWork);
         boolean result = true;
-        for(int a : capabilities){
+        for (int a : capabilities) {
             result = result && networkCapabilities.hasCapability(a);
         }
         return result;
     }
 
+    public boolean networkIsMatchCapabilitiesAndTransportList(ConnectivityManager connectivityManager, Network netWork, List<Integer> capabilities, List<Integer> tansPorts) {
+        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(netWork);
+        boolean result = true;
+
+        if (capabilities != null) {
+            for (int a : capabilities) {
+                result = result && networkCapabilities.hasCapability(a);
+            }
+        }
+
+        if (tansPorts != null && result) {
+            for (int a : tansPorts) {
+                result = result && networkCapabilities.hasTransport(a);
+            }
+        }
+
+        return result;
+    }
+
     /**
      * 获取默认的异步NetworkCallback实现
+     *
      * @param listener
      * @param capabilities
      * @param connectivityManager
      * @return
      */
-    private ConnectivityManager.NetworkCallback getDefaultCallback(NetWorkCallbackAsync.AvailableNetworkListener listener,List<Integer> capabilities,ConnectivityManager connectivityManager){
-        ConnectivityManager.NetworkCallback callback = new NetWorkCallbackAsync(listener, capabilities, new NetWorkCallbackAsync.Match() {
+    private ConnectivityManager.NetworkCallback getDefaultCallback(NetWorkCallbackAsync.AvailableNetworkListener listener, List<Integer> capabilities, List<Integer> transPorts, ConnectivityManager connectivityManager) {
+        ConnectivityManager.NetworkCallback callback = new NetWorkCallbackAsync(listener, new NetWorkCallbackAsync.Match() {
             @Override
-            public boolean match(Network network, int capabilities) {
-                return networkIsMatch(connectivityManager,network,capabilities);
+            public boolean match(Network network) {
+                return networkIsMatchCapabilitiesAndTransportList(connectivityManager, network, capabilities, transPorts);
             }
         });
         return callback;
+    }
+
+    public String intIp2Ip(int ipInt) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ipInt & 0xFF).append(".");
+        sb.append((ipInt >> 8) & 0xFF).append(".");
+        sb.append((ipInt >> 16) & 0xFF).append(".");
+        sb.append((ipInt >> 24) & 0xFF);
+        return sb.toString();
+    }
+
+    /**
+     * 注册WIFI广播
+     */
+    public static void registerWiFiReceiver(AppCompatActivity context) {
+        WiFiReceiverJava receiver = new WiFiReceiverJava();
+        IntentFilter flags = new IntentFilter();
+        flags.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        flags.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        //activity销毁自动取消注册
+        BroadcasterUtil.INSTANCE.registerWiFiBroadCastReceiverForActivity(context, receiver, flags);
     }
 
 }

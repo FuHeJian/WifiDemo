@@ -1,17 +1,13 @@
 package com.example.wifidemo1.helper;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
-import android.content.pm.PackageManager;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityManagerCompat;
 
 import com.example.wifidemo1.bluetooth.BlueToothUtil;
 import com.example.wifidemo1.log.MyLog;
@@ -40,7 +36,6 @@ public class BlueToothScanHelper {
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
                 if (!PermissionUtil.checkBlueToothCONNECT(context)) {
-
                     return;
                 }
                @SuppressLint("MissingPermission") String str  =  result.getDevice().getName();
@@ -58,9 +53,12 @@ public class BlueToothScanHelper {
                 super.onScanFailed(errorCode);
                 MyLog.printLog("扫描失败"+errorCode);
             }
+
         };
 
-        BlueToothUtil.INSTANCE.scanBLE(context, scanFilterList, scanSettings.build(), scanCallback, 20000);
+        BlueToothUtil.INSTANCE.scanBLE(context, scanFilterList, scanSettings.build(), scanCallback, 10000, (adapter) -> {
+            MyLog.printLog("当前类:BlueToothScanHelper,信息:结束查询");
+        });
 
     }
 

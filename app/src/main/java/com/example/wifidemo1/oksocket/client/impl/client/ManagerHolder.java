@@ -56,6 +56,14 @@ public class ManagerHolder {
         return manager;
     }
 
+    public  void removeCache(ConnectionInfo info)
+    {
+        if(info!=null)
+        {
+            mConnectionManagerMap.remove(info);
+        }
+    }
+
     public IConnectionManager getConnection(ConnectionInfo info) {
         IConnectionManager manager = mConnectionManagerMap.get(info);
         if (manager == null) {
@@ -65,6 +73,16 @@ public class ManagerHolder {
         }
     }
 
+    public boolean hasCache(ConnectionInfo info){
+        IConnectionManager manager = mConnectionManagerMap.get(info);
+        return  manager!=null;
+    }
+    /**
+     * 对源码稍作修改，使其可以马上连接其他局域网重名地址的Socket
+     * @param info
+     * @param okOptions
+     * @return
+     */
     public IConnectionManager getConnection(ConnectionInfo info, OkSocketOptions okOptions) {
         IConnectionManager manager = mConnectionManagerMap.get(info);
         if (manager != null) {
@@ -82,6 +100,54 @@ public class ManagerHolder {
         }
     }
 
+    /**
+     * 修改源码，重载
+     * @param info
+     * @param cache
+     * @return
+     */
+    public IConnectionManager getConnection(ConnectionInfo info,boolean cache) {
+        IConnectionManager manager = mConnectionManagerMap.get(info);
+        if (manager == null) {
+            return getConnection(info, OkSocketOptions.getDefault(),cache);
+        } else {
+            return getConnection(info, manager.getOption(),cache);
+        }
+    }
+
+    /**
+     * 修改源码，重载
+     * @param info
+     * @param okOptions
+     * @param cache
+     * @return
+     */
+    public IConnectionManager getConnection(ConnectionInfo info, OkSocketOptions okOptions,boolean cache) {
+        if(cache){
+            IConnectionManager manager = mConnectionManagerMap.get(info);
+            if (manager != null) {
+                if (!okOptions.isConnectionHolden()) {
+                    synchronized (mConnectionManagerMap) {
+                        mConnectionManagerMap.remove(info);
+                    }
+                    return createNewManagerAndCache(info, okOptions);
+                } else {
+                    manager.option(okOptions);
+                }
+                return manager;
+            } else {
+                return createNewManagerAndCache(info, okOptions);
+            }
+        }
+        else {
+            IConnectionManager manager = mConnectionManagerMap.get(info);
+            if (manager != null) {
+                manager.disconnect();
+                mConnectionManagerMap.remove(info);
+            }
+            return createNewManagerAndCache(info, okOptions);
+        }
+    }
     private IConnectionManager createNewManagerAndCache(ConnectionInfo info, OkSocketOptions okOptions) {
         AbsConnectionManager manager = new ConnectionManagerImpl(info);
         manager.option(okOptions);

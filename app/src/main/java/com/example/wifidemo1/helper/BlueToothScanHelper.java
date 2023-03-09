@@ -18,7 +18,7 @@ import java.util.List;
 
 public class BlueToothScanHelper {
 
-    public static void scanBLE(Context context) {
+    public static void scanBLE(Context context, BlueToothUtil.WhenScanOnStop whenScanOnStop) {
 
         List<ScanFilter> scanFilterList = new ArrayList();
 
@@ -31,34 +31,7 @@ public class BlueToothScanHelper {
             scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
         }
 
-        ScanCallback scanCallback = new ScanCallback() {
-            @Override
-            public void onScanResult(int callbackType, ScanResult result) {
-                super.onScanResult(callbackType, result);
-                if (!PermissionUtil.checkBlueToothCONNECT(context)) {
-                    return;
-                }
-               @SuppressLint("MissingPermission") String str  =  result.getDevice().getName();
-
-                MyLog.printLog(str!=null?str:result.getDevice().getAddress());
-            }
-
-            @Override
-            public void onBatchScanResults(List<ScanResult> results) {
-                super.onBatchScanResults(results);
-            }
-
-            @Override
-            public void onScanFailed(int errorCode) {
-                super.onScanFailed(errorCode);
-                MyLog.printLog("扫描失败"+errorCode);
-            }
-
-        };
-
-        BlueToothUtil.INSTANCE.scanBLE(context, scanFilterList, scanSettings.build(), scanCallback, 10000, (adapter) -> {
-            MyLog.printLog("当前类:BlueToothScanHelper,信息:结束查询");
-        });
+        BlueToothUtil.INSTANCE.scanBLE(context, scanFilterList, scanSettings.build(), null, 15000,whenScanOnStop);
 
     }
 

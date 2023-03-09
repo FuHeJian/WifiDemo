@@ -3,22 +3,24 @@ package com.example.wifidemo1.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
-import androidx.annotation.LayoutRes;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
-import androidx.annotation.RawRes;
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModel;
 
 
-import com.example.wifidemo1.R;
 import com.example.wifidemo1.activity.base.BaseDataBindingActivity;
 import com.example.wifidemo1.activity.i.InitView;
 import com.example.wifidemo1.activity.impl.HomeActivityInitViewImpl;
 import com.example.wifidemo1.databinding.ActivityMainBinding;
 import com.example.wifidemo1.log.MyLog;
+import com.example.wifidemo1.viewmodel.HomeViewModel;
 
 
 /**
@@ -26,11 +28,6 @@ import com.example.wifidemo1.log.MyLog;
  * @date: 2023/3/6
  */
 public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.activity_main;
-    }
 
     @SuppressLint("MissingPermission")
     public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +38,11 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         //wifi配置
         //registerWiFiReceiver()
 
+    }
+
+    @Override
+    public <M extends ViewModel> Class<M> getViewModel() {
+        return (Class<M>) HomeViewModel.class;
     }
 
     @NonNull
@@ -88,6 +90,18 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
             MyLog.printLog(permissions[i] + "授权结果" + (grantResults[i] == PackageManager.PERMISSION_GRANTED));
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @NonNull
+    @Override
+    protected ActivityResultLauncher<Intent> createRegisterForActivityResult() {
+        //this::引用lambda的简化用法
+        return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
 }

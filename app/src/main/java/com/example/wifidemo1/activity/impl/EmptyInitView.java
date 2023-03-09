@@ -1,6 +1,8 @@
 package com.example.wifidemo1.activity.impl;
 
 
+import androidx.lifecycle.LifecycleOwner;
+
 import com.example.wifidemo1.activity.i.InitView;
 
 /**
@@ -11,7 +13,12 @@ import com.example.wifidemo1.activity.i.InitView;
 public class EmptyInitView<T> implements InitView<T> {
 
     @Override
-    public void initView(T binding) {
+    public void initView(T binding, LifecycleOwner lifecycleOwner) {
 
+    }
+
+    @Override
+    public void initViewAsync(T binding, LifecycleOwner lifecycleOwner) {
+        InitView.super.initViewAsync(binding, lifecycleOwner);
     }
 }

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.net.SocketFactory;
 
 /**
+ * 用于OkSocket绑定network
  * @author: fuhejian
  * @date: 2023/3/2
  */

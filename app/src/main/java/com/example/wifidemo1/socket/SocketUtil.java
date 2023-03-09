@@ -9,6 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.ViewDataBinding;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
@@ -56,8 +57,8 @@ import okhttp3.WebSocketListener;
  * @date: 2023/3/2
  */
 public class SocketUtil {
-    public static SocketUtil INSTANCE;
 
+    public static SocketUtil INSTANCE;
     static {
         INSTANCE = new SocketUtil();
     }
@@ -67,14 +68,20 @@ public class SocketUtil {
     Handler mMainHandler;
 
     /**
-     * @param
+     * @param listener socket监听
      * @return
      * @description 创建socket 并 绑定到相应的NetWork, 将socket绑定到activity的生命周期，
      * @author fuhejian
      * @time 2023/3/2
      */
-    public IConnectionManager connectSocket(String ip, int port, Network network, AppCompatActivity activity) {
+    public IConnectionManager connectSocket(String ip, int port, Network network, AppCompatActivity activity, IConnectionManager oldSocket, ISocketActionListener listener) {
 
+        //对旧scoket进行销毁
+        if(oldSocket!=null&&oldSocket.getRemoteConnectionInfo()!=null&&OkSocket.hasCache(oldSocket.getRemoteConnectionInfo()))
+        {
+            OkSocket.open(oldSocket.getRemoteConnectionInfo()).disconnect();//断开旧socket连接,内部会自动移除listener
+            OkSocket.removeCache(oldSocket.getRemoteConnectionInfo());//移除缓存，保证open(connection)获取到最新的缓存值
+        }
         IConnectionManager socket = OkSocket.open(ip, port);
 
         //option配置
@@ -82,7 +89,7 @@ public class SocketUtil {
 
         OkSocketOptions.Builder builder = new OkSocketOptions.Builder(options);
         //设置断线重连的规则
-//      builder.setReconnectionManager(defaultReconnectManager).build())
+        //builder.setReconnectionManager(defaultReconnectManager).build())
 
         //绑定到指定的wifi,就不用去调用bindProcessNetWork了。
         if(network!=null)
@@ -94,79 +101,7 @@ public class SocketUtil {
         socket.option(builder.build());
 
         //注册监听
-        ISocketActionListener iSocketActionListener = new ISocketActionListener() {
-            @Override
-            public void onSocketIOThreadStart(String s) {
-                MyLog.printLog("onSocketIOThreadStart");
-            }
-
-            @Override
-            public void onSocketIOThreadShutdown(String s, Exception e) {
-                MyLog.printLog("onSocketIOThreadShutdown");
-            }
-
-            @Override
-            public void onSocketReadResponse(ConnectionInfo connectionInfo, String s, OriginalData originalData) {
-
-                //心跳处理，防止自主断开
-//                boolean isPulse = Arrays.equals(originalData.getBodyBytes(), RequestCommands.Pulse);
-//                if (isPulse) {
-
-                OkSocket.open(connectionInfo).getPulseManager().feed();
-//                }
-                String value = new String(originalData.getBodyBytes(), Charset.forName("utf-8"));
-
-                Log.w(TAG, "onSocketReadResponse: value:" + value);
-
-                Flowable.create(new FlowableOnSubscribe<Object>() {
-
-                    @Override
-                    public void subscribe(@io.reactivex.rxjava3.annotations.NonNull FlowableEmitter<Object> emitter) throws Throwable {
-
-                    }
-                }, BackpressureStrategy.BUFFER);
-
-//                sendOrder(780, 2, null, socket);
-            }
-
-            @Override
-            public void onSocketWriteResponse(ConnectionInfo connectionInfo, String s, ISendable iSendable) {
-
-            }
-
-            @Override
-            public void onPulseSend(ConnectionInfo connectionInfo, IPulseSendable iPulseSendable) {
-                //心跳发送后回调
-                MyLog.printLog("onPulseSend");
-            }
-
-            @Override
-            public void onSocketDisconnection(ConnectionInfo connectionInfo, String s, Exception e) {
-                socket.unRegisterReceiver(this);
-                MyLog.printLog("onSocketDisconnection");
-            }
-
-            @Override
-            public void onSocketConnectionSuccess(ConnectionInfo connectionInfo, String s) {
-
-                //由于PulseManager是connect后通过子线程设置的，如果connect后立即调用，getPulseManager可能返回空，但是连接成功是在PulseManager之后，所以这里获取一定不为空。
-                OkSocket.open(connectionInfo).getPulseManager().setPulseSendable(new PulseSendable()).pulse();
-/*
-                //设置心跳包，不然无法触发心跳
-                pulseManager.setPulseSendable(new PulseSendable());
-                //开始心跳
-                pulseManager.pulse();*/
-
-                MyLog.printLog("onSocketConnectionSuccess");
-
-            }
-
-            @Override
-            public void onSocketConnectionFailed(ConnectionInfo connectionInfo, String s, Exception e) {
-                MyLog.printLog("onSocketConnectionFailed");
-            }
-        };
-
+        ISocketActionListener iSocketActionListener = listener;
         socket.registerReceiver(iSocketActionListener);
 
         socket.connect();
@@ -188,8 +123,6 @@ public class SocketUtil {
                 });
             }
         });
-
-        AndroidSchedulers.mainThread().createWorker();
 
         return socket;
 

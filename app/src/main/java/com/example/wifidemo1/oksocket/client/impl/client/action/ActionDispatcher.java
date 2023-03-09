@@ -96,6 +96,12 @@ public class ActionDispatcher implements IRegister<ISocketActionListener, IConne
         return mManager;
     }
 
+    /**
+     * 修改源码，增加清除所有监听器
+     *
+     * @param socketResponseHandler 注册时的接收器,需要解除的接收器
+     * @return
+     */
     @Override
     public IConnectionManager unRegisterReceiver(ISocketActionListener socketResponseHandler) {
         if (socketResponseHandler != null) {
@@ -110,6 +116,21 @@ public class ActionDispatcher implements IRegister<ISocketActionListener, IConne
                 e.printStackTrace();
             } finally {
                 mLock.unlock();
+            }
+        } else {//添加else
+            for (int i = 0; i < mResponseHandlerList.size(); i++) {
+                try {
+                    while (true) {
+                        if (mLock.tryLock(1, TimeUnit.SECONDS)) {
+                            mResponseHandlerList.remove(mResponseHandlerList.get(i));
+                            break;
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    mLock.unlock();
+                }
             }
         }
         return mManager;

@@ -10,11 +10,16 @@ import android.util.ArraySet;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.permission.PermissionUtil;
 
+
 public class BlueToothReceiver extends BroadcastReceiver {
 
     ReceiverListener mListener;
     ArraySet<String> mData = new ArraySet<>();
 
+    /**
+     *
+     * @param listener 当获取到蓝牙设备时进行回调
+     */
     public BlueToothReceiver(ReceiverListener listener) {
         mListener = listener;
     }

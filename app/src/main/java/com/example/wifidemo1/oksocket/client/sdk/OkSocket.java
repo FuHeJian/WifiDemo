@@ -38,6 +38,14 @@ public class OkSocket {
         return holder.getConnection(connectInfo);
     }
 
+    public static boolean hasCache(ConnectionInfo info){
+        return holder.hasCache(info);
+    }
+
+    public static boolean hasCache(String ip,int port){
+        return holder.hasCache(new ConnectionInfo(ip,port));
+    }
+
     /**
      * 开启一个socket通讯通道,参配为默认参配
      *
@@ -46,8 +54,13 @@ public class OkSocket {
      * @return 该参数的连接管理器 {@link IConnectionManager} 连接参数仅作为配置该通道的参配,不影响全局参配
      */
     public static IConnectionManager open(String ip, int port) {
-        ConnectionInfo info = new ConnectionInfo(ip, port);
-        return holder.getConnection(info);
+            ConnectionInfo info = new ConnectionInfo(ip, port);
+            return holder.getConnection(info);
+    }
+
+    public static void removeCache(ConnectionInfo info)
+    {
+        holder.removeCache(info);
     }
 
     /**
@@ -65,7 +78,7 @@ public class OkSocket {
 
     /**
      * 开启一个socket通讯通道
-     * Deprecated please use {@link OkSocket#open(String, int)}@{@link IConnectionManager#option(OkSocketOptions)}
+     * Deprecated please use {@link OkSocket#open(String, int,boolean)}@{@link IConnectionManager#option(OkSocketOptions)}
      *
      * @param ip        需要连接的主机IPV4地址
      * @param port      需要连接的主机开放的Socket端口号

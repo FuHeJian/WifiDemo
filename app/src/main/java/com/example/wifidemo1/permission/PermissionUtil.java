@@ -58,4 +58,12 @@ public class PermissionUtil {
         return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S;
     }
 
+    static public boolean isHighAndroidQ(){
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
+    }
+
+    static public boolean isHighAndroid29(){
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
+    }
+
 }

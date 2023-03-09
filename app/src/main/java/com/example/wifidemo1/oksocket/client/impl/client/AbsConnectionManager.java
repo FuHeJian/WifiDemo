@@ -63,7 +63,7 @@ public abstract class AbsConnectionManager implements IConnectionManager {
     @Override
     public ConnectionInfo getRemoteConnectionInfo() {
         if (mRemoteConnectionInfo != null) {
-            return mRemoteConnectionInfo.clone();
+            return mRemoteConnectionInfo;
         }
         return null;
     }

@@ -5,6 +5,7 @@ import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.example.wifidemo1.bluetooth.BlueToothUtil.WhenScanOnStop
 import com.example.wifidemo1.helper.BlueToothScanHelper
 
 /**
@@ -30,11 +31,12 @@ object BroadcasterUtil {
     fun registerBlueToothBroadCastReceiverForActivity(
         context: AppCompatActivity,
         receiver: BroadcastReceiver,
-        flags: IntentFilter
+        flags: IntentFilter,
+        whenScanOnStop: WhenScanOnStop
     ) {
         registerSimpleReceiver(context, receiver, flags)
         //开启扫描
-        BlueToothScanHelper.scanBLE(context)
+        BlueToothScanHelper.scanBLE(context,whenScanOnStop)
     }
 
     /**

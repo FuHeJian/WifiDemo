@@ -3,53 +3,35 @@
 
     <data>
         <variable
-            name="data"
-            type="com.example.wifidemo1.viewmodel.TestViewModel" />
+            name="viewModel"
+            type="com.example.wifidemo1.viewmodel.HomeViewModel" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:background="@mipmap/global_background"
+        >
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/fragmentContainer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHeight_percent="0.75"
+            app:layout_constraintWidth_percent="0.75"
+            android:background="@drawable/transparent"
             >
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:layout_width="wrap_content"
-                android:layout_height="100dp"
-                app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed"
-                app:titleCollapseMode="scale"
-                app:contentScrim="@color/white"
-                >
+        </androidx.viewpager2.widget.ViewPager2>
 
-                <androidx.appcompat.widget.Toolbar
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    app:title="hello world"
-                    app:layout_collapseMode="pin"
-                    >
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                </androidx.appcompat.widget.Toolbar>
-
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/DevicesList"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-            >
-
-        </androidx.recyclerview.widget.RecyclerView>
-
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
 
 

@@ -1,7 +1,10 @@
 package com.example.wifidemo1.wifi;
 
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.MacAddress;
@@ -13,15 +16,28 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
+import android.provider.Settings;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.PopUpToBuilder;
 
+import com.example.wifidemo1.activity.RequestCode;
+import com.example.wifidemo1.activity.base.BaseActivity;
+import com.example.wifidemo1.bluetooth.BlueToothUtil;
 import com.example.wifidemo1.broadcaster.BroadcasterUtil;
 import com.example.wifidemo1.broadcaster.WiFiReceiverJava;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.network.NetCallBack.NetWorkCallbackAsync;
 import com.example.wifidemo1.permission.PermissionUtil;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +66,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.DisposableAutoReleaseMultiObserver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import kotlin.jvm.internal.Intrinsics;
 import okhttp3.OkHttp;
 
 public class WifiUtil {
@@ -71,7 +88,7 @@ public class WifiUtil {
      * @param listener
      */
     public void connectWifi(Context context, String name, MacAddress bssid, NetWorkCallbackAsync.AvailableNetworkListener listener) {
-
+        if (!makeWifiOpened(context)) return;//结果不明或者wifi未打开直接返回。
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             //获取ConnectivityManager服务
             ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -213,4 +230,46 @@ public class WifiUtil {
         BroadcasterUtil.INSTANCE.registerWiFiBroadCastReceiverForActivity(context, receiver, flags);
     }
 
+    /**
+     * 确保蓝牙打开
+     *
+     * @param context 同于获取wifi服务
+     */
+    public static boolean makeWifiOpened(Context context) {
+
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        if (!wifiManager.isWifiEnabled()) {
+            if (PermissionUtil.isHighAndroidQ()) {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_WIFI_SETTINGS);
+                if (context instanceof BaseActivity) {
+                    ((BaseActivity) context).addRegisterForActivityResultListener(new BaseActivity.RegisterForActivityResultListener() {
+                        @Override
+                        public void onResult(ActivityResult result) {
+                            if (result != null) {
+                                if (result.getResultCode() == -1) {
+
+                                } else {
+                                    Toast.makeText(context, (CharSequence) "未打开wifi", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            ((BaseActivity) context).removeRegisterForActivityResultListener(this);
+                        }
+                    });
+                    ActivityResultLauncher<Intent> launcher = ((BaseActivity) context).getRegisterForActivityResult();
+                    if (launcher != null) {
+                        launcher.launch(intent);
+                    }
+                } else {
+                    context.startActivity(intent);
+                }
+            } else {
+                return wifiManager.setWifiEnabled(true);
+            }
+        } else {
+            return true;
+        }
+        return false;
+    }
 }

@@ -20,11 +20,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{device.mDevice.name}"
+            android:layout_marginStart="15dp"
             android:textSize="20sp"
             app:layout_constrainedHeight="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf = "parent"
-            app:layout_constraintRight_toLeftOf="@id/deviceStatus"
+            app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent">
         </TextView>
 

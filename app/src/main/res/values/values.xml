@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="TrochalDiskProGrassBar" parent="Widget.MaterialComponents.LinearProgressIndicator">
+
+        <item name="android:progressDrawable">@drawable/progressbar_shape</item>
+    </style>
+
+    <declare-styleable name="TrochalDiskBackground">
+
+        <attr name="thicknessBackGround" format="dimension"/>
+
+    </declare-styleable>
+    
+</resources>
+

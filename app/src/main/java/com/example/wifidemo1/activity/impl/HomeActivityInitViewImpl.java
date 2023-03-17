@@ -3,6 +3,8 @@ package com.example.wifidemo1.activity.impl;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,6 +26,7 @@ import com.example.wifidemo1.adapter.DevicesListAdapter;
 import com.example.wifidemo1.adapter.ViewPager2FragmentAdapter;
 import com.example.wifidemo1.bluetooth.BlueToothUtil;
 import com.example.wifidemo1.databinding.ActivityMainBinding;
+import com.example.wifidemo1.fragment.CameraFragment;
 import com.example.wifidemo1.fragment.HomeFragment;
 import com.example.wifidemo1.helper.BlueToothScanHelper;
 import com.example.wifidemo1.permission.PermissionUtil;
@@ -33,7 +36,6 @@ import com.example.wifidemo1.permission.PermissionUtil;
  * @date: 2023/3/6
  */
 public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
-
 
     /**
      * 这里面可以去执行耗时任务
@@ -64,6 +66,9 @@ public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
             viewPager2.setAdapter(adapter);
             //添加fragment
             adapter.addFragment(new HomeFragment());
+            adapter.addFragment(new CameraFragment());
+            viewPager2.setOffscreenPageLimit(1);
         }
     }
+
 }

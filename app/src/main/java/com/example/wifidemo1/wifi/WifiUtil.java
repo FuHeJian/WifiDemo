@@ -7,12 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.MacAddress;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
@@ -28,6 +30,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.PopUpToBuilder;
 
+import com.example.wifidemo1.App;
+import com.example.wifidemo1.Function.MyConsumer;
 import com.example.wifidemo1.activity.RequestCode;
 import com.example.wifidemo1.activity.base.BaseActivity;
 import com.example.wifidemo1.bluetooth.BlueToothUtil;
@@ -88,7 +92,7 @@ public class WifiUtil {
      * @param listener
      */
     public void connectWifi(Context context, String name, MacAddress bssid, NetWorkCallbackAsync.AvailableNetworkListener listener) {
-        if (!makeWifiOpened(context)) return;//结果不明或者wifi未打开直接返回。
+        if (!makeWifiOpened(context, name, bssid, listener)) return;//结果不明或者wifi未打开直接返回。
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             //获取ConnectivityManager服务
             ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -122,19 +126,23 @@ public class WifiUtil {
         }
     }
 
-    public void findNetWorkForInterNet(Context context, NetWorkCallbackAsync.AvailableNetworkListener listener) {
+    public void findCellularNetWorkForInterNet(Context context, NetWorkCallbackAsync.AvailableNetworkListener listener) {
 
         //获取ConnectivityManager服务
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkRequest networkRequest = new NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .build();
 
         List<Integer> capabilities = new ArrayList<>();
         capabilities.add(NetworkCapabilities.NET_CAPABILITY_INTERNET);
 
-        ConnectivityManager.NetworkCallback callback = getDefaultCallback(listener, capabilities, null, connectivityManager);
+        List<Integer> transportTypes = new ArrayList<>();
+        transportTypes.add(NetworkCapabilities.TRANSPORT_CELLULAR);
+
+        ConnectivityManager.NetworkCallback callback = getDefaultCallback(listener, capabilities, transportTypes, connectivityManager);
 
         //请求获取匹配networkRequest的最佳网络
         //如果没有找到networkRequest的要求的网络，还会自行去寻找合适的网络进行返回,，如果获取到的网络必须满足某项需求
@@ -172,8 +180,8 @@ public class WifiUtil {
         return result;
     }
 
-    public boolean networkIsMatchCapabilitiesAndTransportList(ConnectivityManager connectivityManager, Network netWork, List<Integer> capabilities, List<Integer> tansPorts) {
-        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(netWork);
+    public boolean networkIsMatchCapabilitiesAndTransportList(ConnectivityManager connectivityManager, NetworkCapabilities allCapabilities, List<Integer> capabilities, List<Integer> tansPorts) {
+        NetworkCapabilities networkCapabilities = allCapabilities;
         boolean result = true;
 
         if (capabilities != null) {
@@ -202,8 +210,8 @@ public class WifiUtil {
     private ConnectivityManager.NetworkCallback getDefaultCallback(NetWorkCallbackAsync.AvailableNetworkListener listener, List<Integer> capabilities, List<Integer> transPorts, ConnectivityManager connectivityManager) {
         ConnectivityManager.NetworkCallback callback = new NetWorkCallbackAsync(listener, new NetWorkCallbackAsync.Match() {
             @Override
-            public boolean match(Network network) {
-                return networkIsMatchCapabilitiesAndTransportList(connectivityManager, network, capabilities, transPorts);
+            public boolean match(NetworkCapabilities capabilities1) {
+                return networkIsMatchCapabilitiesAndTransportList(connectivityManager, capabilities1, capabilities, transPorts);
             }
         });
         return callback;
@@ -231,11 +239,11 @@ public class WifiUtil {
     }
 
     /**
-     * 确保蓝牙打开
+     * 确保wifi打开
      *
      * @param context 同于获取wifi服务
      */
-    public static boolean makeWifiOpened(Context context) {
+    public static boolean makeWifiOpened(Context context, String name, MacAddress bssid, NetWorkCallbackAsync.AvailableNetworkListener listener) {
 
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
@@ -248,8 +256,11 @@ public class WifiUtil {
                         @Override
                         public void onResult(ActivityResult result) {
                             if (result != null) {
-                                if (result.getResultCode() == -1) {
-
+                                if (wifiManager.isWifiEnabled()) {
+                                    Toast.makeText(context, (CharSequence) "正在连接wifi", Toast.LENGTH_SHORT).show();
+                                    if (name != null && bssid != null && listener != null) {
+                                        INSTANCE.connectWifi(context, name, bssid, listener);
+                                    }
                                 } else {
                                     Toast.makeText(context, (CharSequence) "未打开wifi", Toast.LENGTH_SHORT).show();
                                 }
@@ -271,5 +282,75 @@ public class WifiUtil {
             return true;
         }
         return false;
+    }
+
+
+    /**
+     * 主线程调用
+     *
+     * @param consumer
+     */
+    public void currentWifiName(MyConsumer<String> consumer) {
+        if (!makeWifiOpened(App.GlobalManager.INSTANCE.getContext(null), null, null, null)) return;
+
+        WifiManager wifiManager = (WifiManager) App.GlobalManager.INSTANCE.getContext(null).getSystemService(Context.WIFI_SERVICE);
+
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) App.GlobalManager.INSTANCE.getContext(null).getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        final NetworkRequest request =
+                new NetworkRequest.Builder()
+                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                        .build();
+        ConnectivityManager.NetworkCallback callback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                super.onAvailable(network);
+                if (connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        WifiInfo wifiInfo = (WifiInfo) connectivityManager.getNetworkCapabilities(network).getTransportInfo();
+                        consumer.accept(wifiInfo.getSSID());
+                    }
+                } else {
+                    consumer.accept(null);
+                }
+                connectivityManager.unregisterNetworkCallback(this);
+            }
+
+            @Override
+            public void onUnavailable() {
+                super.onUnavailable();
+                consumer.accept(null);
+                connectivityManager.unregisterNetworkCallback(this);
+            }
+
+            @Override
+            public void onLosing(@NonNull Network network, int maxMsToLive) {
+                super.onLosing(network, maxMsToLive);
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                super.onLost(network);
+            }
+
+            @Override
+            public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
+                super.onCapabilitiesChanged(network, networkCapabilities);
+            }
+
+            @Override
+            public void onLinkPropertiesChanged(@NonNull Network network, @NonNull LinkProperties linkProperties) {
+                super.onLinkPropertiesChanged(network, linkProperties);
+            }
+
+            @Override
+            public void onBlockedStatusChanged(@NonNull Network network, boolean blocked) {
+                super.onBlockedStatusChanged(network, blocked);
+            }
+
+        };
+        MyLog.printLog("当前类:WifiUtil,当前方法：currentWifiName,当前线程:" + Thread.currentThread().getName() + ",信息:获取连接的wifi名字");
+        connectivityManager.requestNetwork(request, callback);
     }
 }

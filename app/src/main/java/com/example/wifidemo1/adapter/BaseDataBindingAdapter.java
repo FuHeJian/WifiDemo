@@ -1,6 +1,7 @@
 package com.example.wifidemo1.adapter;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.wifidemo1.broadcaster.BlueToothReceiver;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.model.DeviceData;
 import com.example.wifidemo1.oksocket.common.interfaces.utils.TextUtils;
@@ -43,6 +45,8 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
     private  LifecycleOwner mLifecycleOwner;
 
     protected ArrayList<T> mCacheList = new ArrayList<>();
+
+    protected ArrayList<String> mCacheNameList = new ArrayList<>();
     private int mOldCacheListSize = 0;
 
     private Disposable timerDisposable;
@@ -96,18 +100,44 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
                     return;
                 }
             }
-            mCacheList.add(deviceData);
+
+            if(deviceData instanceof BluetoothDevice && !mCacheNameList.contains(((BluetoothDevice) deviceData).getName())){
+                mCacheNameList.add(((BluetoothDevice) deviceData).getName());
+                mCacheList.add(deviceData);
+            }
         }
+        startTimer();
+    }
+
+
+
+    /**
+     * 停止后台对recyclerview数据不断的更新
+     * 这个一定要调用
+     */
+    public void stopTimer() {
+        needStopTimer = true;
+        if(timerDisposable!=null){
+            timerDisposable.dispose();
+            timerDisposable = null;
+        }
+    }
+    public void startTimer() {
+        needStopTimer = false;
         if (timerDisposable == null) {
             timerDisposable = AndroidSchedulers.mainThread().schedulePeriodicallyDirect(new Runnable() {
+               private int num = 0;
                 @Override
                 public void run() {
                     if (mOldCacheListSize != getCurrentList().size()) {
                         MyLog.printLog("当前类:BaseDataBindingAdapter,信息:" + "submit还没有执行完");
                     } else {
                         if (mOldCacheListSize == mCacheList.size()) {
+                            num++;
+                            if(num>10)stopTimer();
                             MyLog.printLog("当前类:BaseDataBindingAdapter,信息:" + "submit执行完了，但还没有新增内容");
                         } else {
+                            num = 0;
                             ArrayList<T> _list = (ArrayList<T>) mCacheList.clone();
                             BaseDataBindingAdapter.this.submitList(_list);
                             mOldCacheListSize = _list.size();
@@ -116,21 +146,12 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
 
                         if (needStopTimer) {
                             MyLog.printLog("当前类:BaseDataBindingAdapter,信息:" + "已销毁，总共获取到的设备：" + mCacheList.size());
-                            timerDisposable.dispose();
-                            mCacheList.clear();
+//                            mCacheList.clear();
                         }
                     }
                 }
             }, 1000L, 2000L, TimeUnit.MILLISECONDS);
         }
-    }
-
-    /**
-     * 停止后台对recyclerview数据不断的更新
-     * 这个一定要调用
-     */
-    public void stopTimer() {
-        needStopTimer = true;
     }
 
     abstract void onBindItem(ViewDataBinding binding, T item, int position);

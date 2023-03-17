@@ -48,6 +48,7 @@ public abstract class BaseDataBindingFragment<T extends ViewDataBinding> extends
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mDataBinding = createDataBinding(inflater, container, savedInstanceState);
+        mDataBinding.setLifecycleOwner(this);
         //viewModel 数据恢复或初始化 start
         ViewModel viewModel = null;
         Class<ViewModel> viewModelClass = getViewModel();

@@ -100,7 +100,7 @@ public class ShortRangeSocketHelper {
 //            iConnectionManager.option(new OkSocketOptions.Builder(iConnectionManager.getOption()).build());
 
 
-            boolean sendResult = sendOrder(780, 2, null);
+            boolean sendResult = sendOrder(780, 2, "-100");
 
             Log.d(TAG, "onSocketConnectionSuccess: sendResult = " + sendResult);
         }

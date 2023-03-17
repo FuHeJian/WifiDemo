@@ -7,6 +7,8 @@ import android.net.NetworkCapabilities;
 
 import androidx.annotation.NonNull;
 
+import com.example.wifidemo1.log.MyLog;
+
 import java.lang.ref.Cleaner;
 import java.util.Collections;
 import java.util.List;
@@ -17,11 +19,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
 
-    AvailableNetworkListener mListener;
+    public AvailableNetworkListener mListener;
 
     private List<Integer> mCapabilities = Collections.emptyList();
 
     private Match mMatch;
+
+    private boolean isUpdate = false;
 
     private Scheduler.Worker mWorker = Schedulers.io().createWorker();
 
@@ -33,37 +37,49 @@ public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
         mMatch = match;
     }
 
-    @SuppressLint("MissingPermission")
     @Override
-    public void onAvailable(@NonNull Network network) {
+    public void onUnavailable() {
+        super.onUnavailable();
+    }
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                boolean matched = true;
+    @Override
+    public void onLosing(@NonNull Network network, int maxMsToLive) {
+        super.onLosing(network, maxMsToLive);
+        MyLog.printLog("当前类:NetWorkCallbackAsync,当前方法：onLosing,当前线程:"+ Thread.currentThread().getName()+",信息:网络正在断开");
+    }
 
-                matched = matched && mMatch.match(network);
 
-                if (mListener.mNetworkIsEmpty && matched) {
-                    mListener.onSuccess(network);
-                    mListener.mNetworkIsEmpty = false;
-                    mListener.mNetWorkIsMatched = true;
-                } else {
-                    if (!matched) {
-                        mListener.onNotMatchNeedNetWork(network);
-                    } else {
-                        mListener.onUpdate(network);
-                    }
-                }
+    @Override
+    public void onLost(@NonNull Network network) {
+        super.onLost(network);
+        mListener.onLost(network,this);
+    }
+
+    @Override
+    public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
+        boolean matched = true;
+
+        matched = matched && mMatch.match(networkCapabilities);
+
+        if(mListener == null) return;
+        if(isUpdate)return;
+        if(matched){
+            mListener.onUpdate(network);
+        }else {
+            mListener.onNotMatchNeedNetWork(network);
+        }
+        isUpdate = true;
+/*        if ( mListener.mNetworkIsEmpty && matched) {
+            mListener.onSuccess(network,NetWorkCallbackAsync.this);
+            mListener.mNetworkIsEmpty = false;
+            mListener.mNetWorkIsMatched = true;
+        } else {
+            if (!matched) {
+                mListener.onNotMatchNeedNetWork(network);
+            } else {
+                mListener.onUpdate(network);
             }
-        };
-
-        //异步执行
-        Disposable schedule = mWorker.schedule(runnable);
-
-        //销毁runnable的执行
-        //schedule.dispose();
-
+        }*/
     }
 
     /**
@@ -80,7 +96,9 @@ public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
          *
          * @param network 首次满足条件的NetWork
          */
-        abstract public void onSuccess(Network network);
+        public void onSuccess(Network network, ConnectivityManager.NetworkCallback callback){
+
+        }
 
         /**
          * 网络更新，匹配到了更好的网络，会多次调用
@@ -100,10 +118,14 @@ public class NetWorkCallbackAsync extends ConnectivityManager.NetworkCallback {
 
         };
 
+        public void onLost(Network network,ConnectivityManager.NetworkCallback callback){
+
+        }
+
     }
 
     public interface Match {
-        public boolean match(Network network);
+        public boolean match(NetworkCapabilities allCapabilities);
     }
 
 }

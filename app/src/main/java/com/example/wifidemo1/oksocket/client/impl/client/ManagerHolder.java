@@ -1,5 +1,6 @@
 package com.example.wifidemo1.oksocket.client.impl.client;
 
+import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.oksocket.client.impl.client.abilities.IConnectionSwitchListener;
 import com.example.wifidemo1.oksocket.client.sdk.client.ConnectionInfo;
 import com.example.wifidemo1.oksocket.client.sdk.client.OkSocketOptions;
@@ -67,6 +68,7 @@ public class ManagerHolder {
     public IConnectionManager getConnection(ConnectionInfo info) {
         IConnectionManager manager = mConnectionManagerMap.get(info);
         if (manager == null) {
+            MyLog.printLog("当前类:ManagerHolder,当前方法：getConnection,当前线程:"+ Thread.currentThread().getName()+",信息:缓存中不存在该socket，重新创建");
             return getConnection(info, OkSocketOptions.getDefault());
         } else {
             return getConnection(info, manager.getOption());

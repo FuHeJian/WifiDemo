@@ -2,6 +2,7 @@ package com.example.wifidemo1.activity;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.util.Log;
 
@@ -18,6 +19,7 @@ import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.permission.PermissionUtil;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * @author: fuhejian
@@ -41,7 +43,7 @@ public class PolarisUtil {
     @SuppressLint("MissingPermission")
     public void registerBlueTooth(AppCompatActivity context, ListAdapter<BluetoothDevice, RecyclerView.ViewHolder> adapter, String blueToothName, BlueToothUtil.WhenScanOnStop whenScanOnStop) {
         if (PermissionUtil.checkBlueToothCONNECT(context)) {
-            BlueToothUtil.registerBlueToothReceiver((device, receiver) -> {//找到BLE时的回调,已过滤重复性device
+            BlueToothUtil.registerBlueToothReceiver((device, receiver,data) -> {//找到BLE时的回调,已过滤重复性device
                 if (blueToothName != null && device.getName().startsWith(blueToothName)) {//找到后添加到adapter并注销广播
                     MyLog.printLog("当前类:PolarisUtil,信息:" + "找到当前的设备" + device.getName());
                     if (adapter instanceof BaseDataBindingAdapter) {
@@ -50,16 +52,18 @@ public class PolarisUtil {
                         ArrayList<BluetoothDevice> list = new ArrayList<>(adapter.getCurrentList());
                         list.add(device);
                         adapter.submitList(list);
-                        //找到后注销掉广播
                     }
-                } else {
+                } else if(blueToothName == null) {
                     MyLog.printLog("当前类:PolarisUtil,信息:" + "找到当前的设备" + device.getName());
                     if (adapter instanceof BaseDataBindingAdapter) {
-                        ((BaseDataBindingAdapter<BluetoothDevice>) adapter).addItem(device);
+                        data.forEach(it->{
+                            ((BaseDataBindingAdapter<BluetoothDevice>) adapter).addItem(it);
+                        });
+                        data.clear();
                     } else {
                         ArrayList<BluetoothDevice> list = new ArrayList<>(adapter.getCurrentList());
                         list.add(device);
-                        adapter.submitList(list);
+                        adapter.submitList(new ArrayList<>(data));
                     }
                 }
             }, context, whenScanOnStop);

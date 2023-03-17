@@ -40,6 +40,7 @@ public abstract class BaseDataBindingActivity<T extends ViewDataBinding> extends
         super.onCreate(savedInstanceState);
         //创建dataBinding
         mDataBinding = createDataBinding();
+        mDataBinding.setLifecycleOwner(this);
         ViewModel viewModel = null;
         Class<ViewModel> viewModelClass = getViewModel();
         if (viewModelClass != null) {

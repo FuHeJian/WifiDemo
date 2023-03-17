@@ -21,4 +21,5 @@ public class EmptyInitView<T> implements InitView<T> {
     public void initViewAsync(T binding, LifecycleOwner lifecycleOwner) {
         InitView.super.initViewAsync(binding, lifecycleOwner);
     }
+
 }

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+        <variable
+            name="versionData"
+            type="com.example.wifidemo1.network.PolarisSettings" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/currentRomVersionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="固件版本">
+
+            </com.google.android.material.button.MaterialButton>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/currentRomVersionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{versionData.HardWarePolarisRomVersion}">
+
+            </com.google.android.material.textview.MaterialTextView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/latest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/latestRomVersionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="最新版本">
+
+            </com.google.android.material.button.MaterialButton>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/latestRomVersionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{versionData.LatestSoftWarePolarisRomVersion}">
+
+            </com.google.android.material.textview.MaterialTextView>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upgrade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/upgradeRomVersionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="升级">
+
+            </com.google.android.material.button.MaterialButton>
+
+            <androidx.core.widget.ContentLoadingProgressBar
+                android:id="@+id/downloadProgress"
+                style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:progress="0"
+                android:visibility="gone">
+
+            </androidx.core.widget.ContentLoadingProgressBar>
+
+            <androidx.core.widget.ContentLoadingProgressBar
+                android:id="@+id/upgradeRomeProgress"
+                style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:progress="0"
+                android:visibility="gone">
+
+            </androidx.core.widget.ContentLoadingProgressBar>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/upgradeRomVersionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            </com.google.android.material.textview.MaterialTextView>
+
+
+        </LinearLayout>
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:constraint_referenced_ids="current,latest,upgrade"
+            app:flow_horizontalGap="10dp"
+            app:flow_wrapMode="chain"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </androidx.constraintlayout.helper.widget.Flow>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

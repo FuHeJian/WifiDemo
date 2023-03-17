@@ -18,7 +18,7 @@ public class DefaultReconnectManager extends AbsReconnectionManager {
     /**
      * 最大连接失败次数,不包括断开异常
      */
-    private static final int MAX_CONNECTION_FAILED_TIMES = 12;
+    private static final int MAX_CONNECTION_FAILED_TIMES = 15;
     /**
      * 连接失败次数,不包括断开异常
      */

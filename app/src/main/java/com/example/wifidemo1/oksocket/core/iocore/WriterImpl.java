@@ -55,7 +55,11 @@ public class WriterImpl implements IWriter<IIOCoreOptions> {
         if (sendable != null) {
             try {
                 writeBytes = sendable.parse();
-                mOutputStream.write(writeBytes);
+                try {
+                    mOutputStream.write(writeBytes);
+                } catch (Exception e) {
+                    throw new WriteException(e);
+                }
                 mOutputStream.flush();
 //                int packageSize = mOkOptions.getWritePackageBytes();
 //                int remainingCount = sendBytes.length;
@@ -82,6 +86,7 @@ public class WriterImpl implements IWriter<IIOCoreOptions> {
 //                    index += realWriteLength;
 //                    remainingCount -= realWriteLength;
 //                }
+
                 if (sendable instanceof IPulseSendable) {
                     mStateSender.sendBroadcast(IOAction.ACTION_PULSE_REQUEST, sendable);
                 } else {

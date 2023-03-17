@@ -34,13 +34,14 @@ object BroadcasterUtil {
         flags: IntentFilter,
         whenScanOnStop: WhenScanOnStop
     ) {
+
         registerSimpleReceiver(context, receiver, flags)
         //开启扫描
         BlueToothScanHelper.scanBLE(context,whenScanOnStop)
     }
 
     /**
-     * 协助注册广播的方法
+     * 协助注册广播的方法,自动耕跟踪activity生命周期
      */
     private fun registerSimpleReceiver(
         context: AppCompatActivity,

@@ -21,7 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.wifidemo1.log.MyLog;
 
 import java.util.List;
-
+@SuppressLint("MissingPermission")
 public class WiFiReceiverJava extends BroadcastReceiver {
 
     private WifiManager wifiManager;
@@ -66,7 +66,7 @@ public class WiFiReceiverJava extends BroadcastReceiver {
 
     private void scanSuccess() {
         //有wifi数据更新
-        List<ScanResult> scanResultList = wifiManager.getScanResults();
+         List<ScanResult> scanResultList = wifiManager.getScanResults();
         //打印日志
         log(scanResultList);
     }
@@ -137,7 +137,5 @@ public class WiFiReceiverJava extends BroadcastReceiver {
             wifiManager.enableNetwork(netId, true);
         }
     }
-
-
 
 }

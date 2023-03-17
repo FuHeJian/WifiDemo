@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.example.wifidemo1.customview.TrochalDiskBackground
+        android:id="@+id/trochalDisk"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:thicknessBackGround="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        >
+
+        <com.example.wifidemo1.customview.TrochalDiskView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="50dp"
+            app:cardBackgroundColor="#ff1C252F"
+            android:layout_gravity="center"
+            app:layout_constraintBottom_toBottomOf="@id/trochalDisk"
+            app:layout_constraintLeft_toLeftOf="@id/trochalDisk"
+            app:layout_constraintTop_toTopOf="@id/trochalDisk"
+            app:layout_constraintRight_toRightOf="@id/trochalDisk"
+            >
+        </com.example.wifidemo1.customview.TrochalDiskView>
+
+    </com.example.wifidemo1.customview.TrochalDiskBackground>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/getVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="getVersion"
+        >
+
+    </com.google.android.material.button.MaterialButton>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="download"
+        >
+
+    </com.google.android.material.button.MaterialButton>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/startUpgrade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="上传数据"
+        >
+    </com.google.android.material.button.MaterialButton>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/checkUpgradeState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        >
+    </com.google.android.material.button.MaterialButton>
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:progress="0"
+        android:visibility="gone"
+        style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+        >
+
+    </androidx.core.widget.ContentLoadingProgressBar>
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:flow_wrapMode="chain"
+        app:flow_horizontalStyle="spread"
+        app:constraint_referenced_ids="getVersion,download,loading,startUpgrade,checkUpgradeState"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        >
+
+    </androidx.constraintlayout.helper.widget.Flow>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

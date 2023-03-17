@@ -74,7 +74,7 @@ public class BlueToothUtil {
      */
 
     @SuppressLint("MissingPermission")
-    private final void makeOpenBLE(final Context context, List<android.bluetooth.le.ScanFilter> filter, ScanSettings settings, final ScanCallback callback, final long scanTime, final boolean scanBLE, WhenScanOnStop onStop) {
+    public final boolean makeOpenBLE(final Context context, List<android.bluetooth.le.ScanFilter> filter, ScanSettings settings, final ScanCallback callback, final long scanTime, final boolean scanBLE, WhenScanOnStop onStop) {
         Object var10000 = context.getSystemService(Context.BLUETOOTH_SERVICE);
         if (!(var10000 instanceof BluetoothManager)) {
             var10000 = null;
@@ -85,7 +85,7 @@ public class BlueToothUtil {
         if (BLUETOOTH != null && adapter != null) {
             //检查权限
             if (!PermissionUtil.checkBlueToothCONNECT(context)) {
-                return;
+                return false;
             }
 
             if (!adapter.isEnabled()) {
@@ -120,12 +120,14 @@ public class BlueToothUtil {
                 } else {
                     context.startActivity(intent);
                 }
-
+            return false;
             } else if (scanBLE) {
                 //蓝牙已打开
                 BlueToothUtil.INSTANCE.scanBLEWithBLEEnabled(context, filter,settings,callback, scanTime, onStop);
             }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -204,10 +206,10 @@ public class BlueToothUtil {
         BluetoothManager BLUETOOTH = (BluetoothManager) var10000;
         BluetoothAdapter adapter = BLUETOOTH != null ? BLUETOOTH.getAdapter() : null;
         MyLog.printLog("当前类:BlueToothUtil,信息: 扫描：" + adapter.isDiscovering());
-        if (adapter.isDiscovering()) {
-            adapter.cancelDiscovery();
-        }
         if (adapter != null) {
+            if (adapter.isDiscovering()) {
+                adapter.cancelDiscovery();
+            }
             BluetoothLeScanner bluetoothLeScanner = adapter.getBluetoothLeScanner();
             if (callback != null && bluetoothLeScanner != null) {
                 bluetoothLeScanner.startScan(filter,settings,callback);

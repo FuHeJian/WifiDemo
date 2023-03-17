@@ -10,12 +10,15 @@ import android.util.ArraySet;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.permission.PermissionUtil;
 
+import java.util.ArrayList;
+
 
 public class BlueToothReceiver extends BroadcastReceiver {
 
     ReceiverListener mListener;
     ArraySet<String> mData = new ArraySet<>();
 
+    ArraySet<BluetoothDevice> mDevices = new ArraySet<>();
     /**
      *
      * @param listener 当获取到蓝牙设备时进行回调
@@ -39,10 +42,13 @@ public class BlueToothReceiver extends BroadcastReceiver {
                     MyLog.printLog(name);
                 }
                 if (name != null && mListener!=null) {
-                    if (!mData.contains(name)) {
-                        mListener.onAddData(device,this);
+/*                    if (!mData.contains(name)) {
+
+                    }*/
+                        mDevices.add(device);
+                        mListener.onAddData(device,this,mDevices);
                         mData.add(name);
-                    }
+
                 }
             }
             default: {
@@ -60,7 +66,7 @@ public class BlueToothReceiver extends BroadcastReceiver {
          * @param device 找到的Device
          * @param receiver 接收此广播的BroadcastReceiver
          */
-        void onAddData(BluetoothDevice device,BroadcastReceiver receiver);
+        void onAddData(BluetoothDevice device, BroadcastReceiver receiver, ArraySet<BluetoothDevice> data);
 
     }
 

@@ -67,6 +67,10 @@ public class SocketUtil {
 
     Handler mMainHandler;
 
+    public IConnectionManager CurrentSocket;
+
+    public int mCurrentState;
+
     /**
      * @param listener socket监听
      * @return
@@ -88,8 +92,8 @@ public class SocketUtil {
         OkSocketOptions options = socket.getOption();
 
         OkSocketOptions.Builder builder = new OkSocketOptions.Builder(options);
-        //设置断线重连的规则
-        //builder.setReconnectionManager(defaultReconnectManager).build())
+        //设置断线重连的规则,不设置则使用默认的重连规则,使用null取消重连
+//        builder.setReconnectionManager(null);
 
         //绑定到指定的wifi,就不用去调用bindProcessNetWork了。
         if(network!=null)
@@ -97,13 +101,13 @@ public class SocketUtil {
             OkSocketFactory factory = SocketUtil.INSTANCE.socketFactoryToOkSocketFactoryForBindNetWork(network);
             builder.setSocketFactory(factory);
         }
-        //创建socket，并连接地址
+        //创建socket，并绑定
         socket.option(builder.build());
 
         //注册监听
         ISocketActionListener iSocketActionListener = listener;
         socket.registerReceiver(iSocketActionListener);
-
+        //开始连接
         socket.connect();
 
         if (mMainHandler == null) {
@@ -116,16 +120,16 @@ public class SocketUtil {
                 activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
                     @Override
                     public void onDestroy(@NonNull LifecycleOwner owner) {
+                        CurrentSocket = null;
                         socket.unRegisterReceiver(iSocketActionListener);
                         socket.disconnect();
-                        mMainHandler.removeCallbacksAndMessages(null);
                     }
                 });
             }
         });
+        mMainHandler = null;
 
         return socket;
-
     }
 
     public WebSocket connectWebSocket(String address, Network network, @NonNull WebSocketListener listener) {
@@ -153,22 +157,36 @@ public class SocketUtil {
     private static final String TAG = "SocketUtil";
 
     //780, 2, null
-    public synchronized boolean sendOrder(int code, int sptype, String msg, IConnectionManager socket) {
+    public synchronized boolean sendOrder(int code, int sptype, String msg) {
 
+        if(CurrentSocket==null || !CurrentSocket.isConnect()){
+            MyLog.printLog("当前类:SocketUtil,当前方法：sendOrder,信息:还未连接到socket");
+            return false;
+        }
+        if (msg == null)
+            msg = "-100";
+        updateState(code);
         int spkey = 1;
         String cmd = spkey + "&" + code + "&" + sptype + "&" + msg + "#";
         Log.d(TAG, "指令 sendOrder: cmd =" + cmd);
         try {
-            socket.send(new OrderDataSendable(cmd));
+            CurrentSocket.send(new OrderDataSendable(cmd));
         } catch (Exception e) {
             return false;
         }
         return true;
-
     }
 
     public OkSocketFactory socketFactoryToOkSocketFactoryForBindNetWork(Network network) {
         return new OkSocketFactoryStub(network);
+    }
+
+    public void updateState(int state){
+        mCurrentState = state;
+    }
+
+    public void parseResponse(){
+
     }
 
 }

@@ -16,4 +16,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "WIfiDemo1"
-include ':app'
+include ':app'//模块需要加冒号
+includeBuild 'versionPlugin'

@@ -406,7 +406,7 @@ public class OkSocketOptions implements IIOCoreOptions {
         okOptions.mReadByteOrder = ByteOrder.BIG_ENDIAN;
         okOptions.mWriteOrder = ByteOrder.BIG_ENDIAN;
         okOptions.isConnectionHolden = true;
-        okOptions.mPulseFeedLoseTimes = 5;
+        okOptions.mPulseFeedLoseTimes = 10;
         okOptions.mReconnectionManager = new DefaultReconnectManager();
         okOptions.mSSLConfig = null;
         okOptions.mOkSocketFactory = null;

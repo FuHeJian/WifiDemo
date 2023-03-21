@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.example.wifidemo1.units;
+package com.example.wifidemo1.oksocket.units;
 
 
 import com.example.wifidemo1.util.Geometry;
 import com.example.wifidemo1.util.MathUtil;
-
-import java.util.Date;
 
 public class RaDec {
     public float ra;        // In degrees

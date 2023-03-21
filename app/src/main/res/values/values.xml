@@ -11,6 +11,11 @@
         <attr name="thicknessBackGround" format="dimension"/>
 
     </declare-styleable>
-    
+
+    <style name="TextAppearance.Important" parent="">
+        <item name="android:textSize">28sp</item>
+        <item name="android:color">@color/black</item>
+    </style>
+
 </resources>
 

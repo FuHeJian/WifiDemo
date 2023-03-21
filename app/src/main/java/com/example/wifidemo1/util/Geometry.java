@@ -14,11 +14,11 @@
 
 package com.example.wifidemo1.util;
 
-import com.example.wifidemo1.units.GeocentricCoordinates;
-import com.example.wifidemo1.units.LatLong;
-import com.example.wifidemo1.units.Matrix33;
-import com.example.wifidemo1.units.RaDec;
-import com.example.wifidemo1.units.Vector3;
+import com.example.wifidemo1.oksocket.units.GeocentricCoordinates;
+import com.example.wifidemo1.oksocket.units.LatLong;
+import com.example.wifidemo1.oksocket.units.Matrix33;
+import com.example.wifidemo1.oksocket.units.RaDec;
+import com.example.wifidemo1.oksocket.units.Vector3;
 
 import java.util.Date;
 

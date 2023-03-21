@@ -1,7 +1,7 @@
 package com.example.wifidemo1.singleton;
 
 import com.example.wifidemo1.ApplicationConstants;
-import com.example.wifidemo1.units.LatLong;
+import com.example.wifidemo1.oksocket.units.LatLong;
 import com.example.wifidemo1.utils.OrderCommunication;
 
 public class AppGlobalDataMgr {

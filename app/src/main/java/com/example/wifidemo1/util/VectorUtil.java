@@ -14,7 +14,7 @@
 
 package com.example.wifidemo1.util;
 
-import com.example.wifidemo1.units.Vector3;
+import com.example.wifidemo1.oksocket.units.Vector3;
 
 
 public class VectorUtil {

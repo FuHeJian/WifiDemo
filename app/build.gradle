@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'wifidemo1.versionPlugin'
 }
 
 android {
@@ -23,15 +24,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
+/*    kotlinOptions {
         jvmTarget = '1.8'
-    }
+    }*/
     buildFeatures {
         viewBinding true
+    }
+    sourceSets{
+        main{
+            jniLibs.srcDirs = ['libs']
+        }
     }
 
     dataBinding {
@@ -68,7 +81,7 @@ android {
 dependencies {
 
     //引入内部库
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
 
     def navigationVersion = "2.4.0"
     runtimeOnly 'androidx.core:core-ktx:1.9.0'
@@ -98,6 +111,10 @@ dependencies {
 
     //mmkv
     implementation 'com.tencent:mmkv:1.2.15'
+
+//    ijkplayer
+//    implementation Deps.dependencies.ijkplayerJava
+//    implementation Deps.dependencies.ijkplayerArmV7a
 
     def retrofit = "2.9.0"
     //retrofit

@@ -96,7 +96,7 @@ public class DevicesListAdapter extends BaseDataBindingAdapter<BluetoothDevice> 
     }
 
     @Override
-    void onBindItem(ViewDataBinding binding, BluetoothDevice item, int position) {
+    public void onBindItem(ViewDataBinding binding, BluetoothDevice item, int position) {
         MyLog.printLog("当前类:DevicesListAdapter,位置信息:" + position);
         View view = binding.getRoot();
 
@@ -477,7 +477,7 @@ public class DevicesListAdapter extends BaseDataBindingAdapter<BluetoothDevice> 
     }
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.bluetoothdeviceitem;
     }
 

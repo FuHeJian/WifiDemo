@@ -53,12 +53,12 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
 
     private boolean needStopTimer = false;
 
-    protected BaseDataBindingAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,@NotNull LifecycleOwner lifecycleOwner) {
+    public BaseDataBindingAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,@NotNull LifecycleOwner lifecycleOwner) {
         super(diffCallback);
         mLifecycleOwner = lifecycleOwner;
     }
 
-    protected BaseDataBindingAdapter(@NonNull AsyncDifferConfig<T> config,@NotNull LifecycleOwner lifecycleOwner) {
+    public BaseDataBindingAdapter(@NonNull AsyncDifferConfig<T> config,@NotNull LifecycleOwner lifecycleOwner) {
         super(config);
         mLifecycleOwner = lifecycleOwner;
     }
@@ -154,8 +154,8 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
         }
     }
 
-    abstract void onBindItem(ViewDataBinding binding, T item, int position);
+    abstract public void onBindItem(ViewDataBinding binding, T item, int position);
 
-    abstract @LayoutRes int getLayoutId();
+    abstract public @LayoutRes int getLayoutId();
 
 }

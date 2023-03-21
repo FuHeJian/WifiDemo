@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.ViewGroupUtils;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.databinding.library.baseAdapters.BR;
@@ -39,6 +40,7 @@ import com.example.wifidemo1.utils.OrderCommunication;
 import com.example.wifidemo1.utils.UpgradeUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.internal.ViewUtils;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.File;
@@ -66,6 +68,7 @@ public class HomeFragmentInitViewImpl implements FragmentInitView<HomeFragmentBi
         //connectivityManager.bindProcessToNetwork(network);
         binding.DevicesList.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.VERTICAL, false));
         DevicesListAdapter adapter;
+
         //横竖屏切换，保存数据
         if (binding.getViewModel() != null && binding.getViewModel().devicesListAdapter != null) {
             binding.setViewModel(binding.getViewModel());

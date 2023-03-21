@@ -24,4 +24,6 @@ public class ViewPager2FragmentAdapter extends BaseDataBindingFragmentAdapter{
         super(fragmentManager, lifecycle);
     }
 
+
+
 }

@@ -14,7 +14,7 @@
 
 package com.example.wifidemo1;
 
-import com.example.wifidemo1.units.Vector3;
+import com.example.wifidemo1.oksocket.units.Vector3;
 
 /**
  * A home for the application's few global constants.

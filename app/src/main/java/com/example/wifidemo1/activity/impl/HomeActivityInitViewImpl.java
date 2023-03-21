@@ -28,6 +28,7 @@ import com.example.wifidemo1.bluetooth.BlueToothUtil;
 import com.example.wifidemo1.databinding.ActivityMainBinding;
 import com.example.wifidemo1.fragment.CameraFragment;
 import com.example.wifidemo1.fragment.HomeFragment;
+import com.example.wifidemo1.fragment.TestFragment;
 import com.example.wifidemo1.helper.BlueToothScanHelper;
 import com.example.wifidemo1.permission.PermissionUtil;
 
@@ -51,7 +52,7 @@ public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
     public void initView(ActivityMainBinding binding, LifecycleOwner lifecycleOwner) {
         //初始化ViewPager2
         initViewPager2(binding);
-        //
+
     }
 
     /**
@@ -67,8 +68,12 @@ public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
             //添加fragment
             adapter.addFragment(new HomeFragment());
             adapter.addFragment(new CameraFragment());
+            adapter.addFragment(new TestFragment());
+            //设置一屏多页
+            ((RecyclerView) viewPager2.getChildAt(0)).setPadding(300,0,200,0);
+            ((RecyclerView) viewPager2.getChildAt(0)).setClipToPadding(false);
             viewPager2.setOffscreenPageLimit(1);
+
         }
     }
-
 }

@@ -1,31 +1,12 @@
 package com.example.wifidemo1.activity.impl;
 
-import android.content.res.AssetFileDescriptor;
-import android.view.SurfaceHolder;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.helper.widget.Flow;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.ViewGroupUtils;
 import androidx.lifecycle.LifecycleOwner;
 
-import com.blankj.utilcode.util.ViewUtils;
 import com.example.wifidemo1.activity.i.InitView;
-import com.example.wifidemo1.customview.MyTimer;
 import com.example.wifidemo1.databinding.SecondActivityBinding;
 import com.example.wifidemo1.log.MyLog;
-import com.example.wifidemo1.opengl.MyGlSurfaceView;
-
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
-import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkServerCmd;
 import tv.danmaku.ijk.media.player.IjkTimedText;
 

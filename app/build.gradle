@@ -38,17 +38,16 @@ android {
 /*    kotlinOptions {
         jvmTarget = '1.8'
     }*/
+
     buildFeatures {
         viewBinding true
+        dataBinding true
     }
+
     sourceSets{
         main{
             jniLibs.srcDirs = ['libs']
         }
-    }
-
-    dataBinding {
-        enabled = true;
     }
 
     //解决依赖冲突，统一版本

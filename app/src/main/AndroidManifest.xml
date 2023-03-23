@@ -22,6 +22,9 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+
+
     <!--usesCleartextTraffic 允许http访问 -->
     <application
         android:name=".App"

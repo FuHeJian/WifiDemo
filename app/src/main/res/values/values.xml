@@ -17,5 +17,7 @@
         <item name="android:color">@color/black</item>
     </style>
 
+    <attr name="indicatorWidth" format="dimension" />
+
 </resources>
 

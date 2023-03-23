@@ -6,14 +6,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.example.wifidemo1.opengl.MyGlSurfaceView
+        <com.example.wifidemo1.customview.MyGlSurfaceView
             android:id="@+id/text"
             android:layout_width="300dp"
             android:layout_height="300dp"
             android:text="hello world"
             >
 
-        </com.example.wifidemo1.opengl.MyGlSurfaceView>
+        </com.example.wifidemo1.customview.MyGlSurfaceView>
 
         <androidx.constraintlayout.helper.widget.Flow
             android:id="@+id/flow"

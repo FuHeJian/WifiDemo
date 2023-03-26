@@ -14,7 +14,7 @@ import tv.danmaku.ijk.media.player.IjkTimedText;
  * @author: fuhejian
  * @date: 2023/3/17
  */
-public class SecondActivityInitViewImpl implements InitView<SecondActivityBinding>, IMediaPlayer.OnAllListener {
+public class SecondActivityInitViewImpl implements InitView<SecondActivityBinding> {
 
     @Override
     public void initView(SecondActivityBinding binding, LifecycleOwner lifecycleOwner) {
@@ -85,51 +85,4 @@ public class SecondActivityInitViewImpl implements InitView<SecondActivityBindin
 
 
     }
-
-    @Override
-    public void onPrepared(IMediaPlayer iMediaPlayer) {
-        MyLog.printLog("当前类:SecondActivityInitViewImpl,当前方法：onPrepared,当前线程:" + Thread.currentThread().getName() + ",信息:");
-    }
-
-    @Override
-    public void onCompletion(IMediaPlayer iMediaPlayer) {
-        MyLog.printLog("当前类:SecondActivityInitViewImpl,当前方法：onCompletion,当前线程:" + Thread.currentThread().getName() + ",信息:");
-    }
-
-    @Override
-    public void onBufferingUpdate(IMediaPlayer iMediaPlayer, int i) {
-        MyLog.printLog("当前类:SecondActivityInitViewImpl,当前方法：onBufferingUpdate,当前线程:" + Thread.currentThread().getName() + ",信息:");
-    }
-
-    @Override
-    public void onSeekComplete(IMediaPlayer iMediaPlayer) {
-        MyLog.printLog("当前类:SecondActivityInitViewImpl,当前方法：onSeekComplete,当前线程:" + Thread.currentThread().getName() + ",信息:");
-    }
-
-    @Override
-    public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int i, int i1, int i2, int i3) {
-
-    }
-
-    @Override
-    public void onError(IMediaPlayer iMediaPlayer, int i, int i1) {
-        MyLog.printLog("当前类:SecondActivityInitViewImpl,当前方法：onError,当前线程:" + Thread.currentThread().getName() + ",信息:");
-        iMediaPlayer.start();
-    }
-
-    @Override
-    public void onInfo(IMediaPlayer iMediaPlayer, int i, int i1) {
-
-    }
-
-    @Override
-    public void onTimedText(IMediaPlayer iMediaPlayer, IjkTimedText ijkTimedText) {
-        MyLog.printLog("当前类:SecondActivityInitViewImpl,当前方法：onTimedText,当前线程:" + Thread.currentThread().getName() + ",信息:");
-    }
-
-    @Override
-    public void onServerCmd(IMediaPlayer iMediaPlayer, IjkServerCmd ijkServerCmd) {
-
-    }
-
 }

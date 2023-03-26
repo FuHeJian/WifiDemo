@@ -70,6 +70,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         mRegisterForActivityResultListenerList.clear();
     }
 
+    //分发ActivityResult到通过addRegisterForActivityResultListener添加的Listener
     public void dispatchRegisterForActivityResultListener(ActivityResult result){
         mRegisterForActivityResultListenerList.forEach((listener)->{
             listener.onResult(result);

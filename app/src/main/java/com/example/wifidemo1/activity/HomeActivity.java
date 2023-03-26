@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,6 +25,7 @@ import com.example.wifidemo1.activity.i.InitView;
 import com.example.wifidemo1.activity.impl.HomeActivityInitViewImpl;
 import com.example.wifidemo1.activity.theme.ThemeUtil;
 import com.example.wifidemo1.databinding.ActivityMainBinding;
+import com.example.wifidemo1.databinding.CompassMainBinding;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.network.PolarisSettings;
 import com.example.wifidemo1.utils.UrlUtils;
@@ -44,9 +46,10 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
     @SuppressLint("MissingPermission")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ThemeUtil.INSTANCE.setSystemStatusBar(this,true,true);
+        ThemeUtil.INSTANCE.setSystemStatusBar(this, true, true);
+        App.GlobalManager.INSTANCE.activitys.put(this, "HomeActivity");
 
-        App.GlobalManager.INSTANCE.activitys.put(this,"HomeActivity");
+        startActivity(new Intent(this, CompassActivity.class));
 
         getPermission();
         initMMKV();
@@ -55,7 +58,13 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         //registerWiFiReceiver()
     }
 
-    public void initMMKV(){
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode, @NonNull Configuration newConfig) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
+    }
+
+    public void initMMKV() {
         MMKV.initialize(this);
         MMKV mmkv = MMKV.defaultMMKV();
         SharedPreferences downloadedFileNamePath = getSharedPreferences("PolarisSettings", Context.MODE_PRIVATE);

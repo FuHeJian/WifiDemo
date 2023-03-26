@@ -50,7 +50,7 @@ object BroadcasterUtil {
     ) {
         context.registerReceiver(receiver, flags)
         val observer = object : DefaultLifecycleObserver {
-            override fun onDestroy(owner: LifecycleOwner) {
+            override fun onStop(owner: LifecycleOwner) {
                 context.unregisterReceiver(receiver)
                 context.lifecycle.removeObserver(this)
             }

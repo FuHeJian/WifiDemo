@@ -51,6 +51,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activity.SecondActivity">
+
+        </activity>
+
     </application>
 
 </manifest>

@@ -1,9 +1,11 @@
 package com.example.wifidemo1.activity;
 
 import android.content.Intent;
+import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.databinding.ViewDataBinding;
 
 import com.example.wifidemo1.activity.base.BaseDataBindingActivity;
@@ -37,5 +39,10 @@ public class SecondActivity extends BaseDataBindingActivity {
     @Override
     public Class getViewModel() {
         return null;
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 }

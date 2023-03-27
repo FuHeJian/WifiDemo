@@ -3,6 +3,7 @@ package com.example.wifidemo1.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +18,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModel;
 
 
-import com.blankj.utilcode.util.Utils;
 import com.example.wifidemo1.App;
 import com.example.wifidemo1.activity.base.BaseDataBindingActivity;
 import com.example.wifidemo1.activity.i.InitView;
@@ -26,13 +26,8 @@ import com.example.wifidemo1.activity.theme.ThemeUtil;
 import com.example.wifidemo1.databinding.ActivityMainBinding;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.network.PolarisSettings;
-import com.example.wifidemo1.utils.UrlUtils;
 import com.example.wifidemo1.viewmodel.HomeViewModel;
 import com.tencent.mmkv.MMKV;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.lang.ref.WeakReference;
 
 
 /**
@@ -45,11 +40,14 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ThemeUtil.INSTANCE.setSystemStatusBar(this,true,true);
-
         App.GlobalManager.INSTANCE.activitys.put(this,"HomeActivity");
 
         getPermission();
         initMMKV();
+
+        Intent intent = new Intent();
+        intent.setComponent( new ComponentName(this,SecondActivity.class));
+        startActivity(intent);
 
         //wifi配置
         //registerWiFiReceiver()
@@ -124,10 +122,4 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         //this::引用lambda的简化用法
         return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
 }

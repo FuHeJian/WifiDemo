@@ -46,7 +46,7 @@ android {
 
     sourceSets{
         main{
-            jniLibs.srcDirs = ['libs']
+            jniLibs.srcDirs = ['src/main/jniLibs', 'libs']
         }
     }
 
@@ -61,17 +61,13 @@ android {
         // Return runtime configuration objects of a variant.
         variant.getRuntimeConfiguration().resolutionStrategy {
             eachDependency { DependencyResolveDetails details ->
-
                 //specifying a fixed version for all libraries with 'org.gradle' group
                 if (details.requested.group == "androidx.lifecycle") {
                     details.useVersion '2.5.0'
                 }
             }
         }
-        // Return annotation processor configuration of a variant.
-        variant.getAnnotationProcessorConfiguration().resolutionStrategy {
 
-        }
     }
 
 }
@@ -111,15 +107,26 @@ dependencies {
     //mmkv
     implementation 'com.tencent:mmkv:1.2.15'
 
-//    ijkplayer
-//    implementation Deps.dependencies.ijkplayerJava
-//    implementation Deps.dependencies.ijkplayerArmV7a
-
     def retrofit = "2.9.0"
     //retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
     implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit"
+
+    def paging_version = "3.1.1"
+
+    implementation "androidx.paging:paging-runtime:$paging_version"
+
+/*    implementation(Deps.dependencies.ijkplayerJava){
+        exclude module: 'ijkplayer-java-0.8.8-runtime'
+    }
+    implementation(Deps.dependencies.ijkplayerArmV7a){
+        exclude module: 'ijkplayer-java-0.8.8-runtime'
+    }*/
+    implementation(Deps.dependencies.ijkplayerExo){
+        exclude module: 'ijkplayer-java'
+    }
+
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

@@ -11,12 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.wifidemo1.App;
-
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * registeractivityresult的activity基类
@@ -26,9 +23,13 @@ import java.util.ArrayList;
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
+    static public final String REQUEST_PERMISSION_INTENT_ACTION = "androidx.activity.result.contract.action.REQUEST_PERMISSIONS";
+
     private ViewModelProvider mViewModelProvider = null;
     private ArraySet<RegisterForActivityResultListener> mRegisterForActivityResultListenerList = new ArraySet<>();
     private ActivityResultLauncher<Intent> mRegisterForActivityResult;
+    private ActivityResultLauncher<String[]> mRegisterForPermissionsResult;
+    private ArraySet<RegisterForPermissionsResultListener> mRegisterForPermissionsResultListenerList = new ArraySet<>();
 
     /**
      * 由子类实现,用于创建ActivityResultLauncher
@@ -39,15 +40,22 @@ public abstract class BaseActivity extends AppCompatActivity {
     @NotNull
     abstract protected ActivityResultLauncher<Intent> createRegisterForActivityResult();
 
+    abstract protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModelProvider = new ViewModelProvider(this);
         mRegisterForActivityResult = createRegisterForActivityResult();
+        mRegisterForPermissionsResult = createRegisterForPermissionsResult();
     }
 
     public ActivityResultLauncher<Intent> getRegisterForActivityResult() {
-        return mRegisterForActivityResult;
+       return mRegisterForActivityResult;
+    }
+
+    public ActivityResultLauncher<String[]> getRegisterForPermissionsResult() {
+       return mRegisterForPermissionsResult;
     }
 
     public ArraySet<RegisterForActivityResultListener> getRegisterForActivityResultListenerList() {
@@ -60,6 +68,23 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    public void addRegisterForPermissionsResultListener(RegisterForPermissionsResultListener listener) {
+        if (listener != null) {
+            mRegisterForPermissionsResultListenerList.add(listener);
+        }
+    }
+
+    public void removeRegisterForPermissionsResultListener(RegisterForPermissionsResultListener listener) {
+        if (listener != null) {
+            mRegisterForPermissionsResultListenerList.remove(listener);
+        }
+    }
+    public void dispatchRegisterForPermissionsResultListener(Map<String,Boolean> result){
+        mRegisterForPermissionsResultListenerList.forEach((listener)->{
+            listener.onResult(result);
+        });
+    }
+
     public void removeRegisterForActivityResultListener(RegisterForActivityResultListener listener) {
         if (listener != null) {
             mRegisterForActivityResultListenerList.remove(listener);
@@ -70,7 +95,14 @@ public abstract class BaseActivity extends AppCompatActivity {
         mRegisterForActivityResultListenerList.clear();
     }
 
+    //分发ActivityResult到通过addRegisterForActivityResultListener添加的Listener
     public void dispatchRegisterForActivityResultListener(ActivityResult result){
+        mRegisterForActivityResultListenerList.forEach((listener)->{
+            listener.onResult(result);
+        });
+    }
+
+    public void dispatchRegisterForActivityPermissionsListener(ActivityResult result){
         mRegisterForActivityResultListenerList.forEach((listener)->{
             listener.onResult(result);
         });
@@ -89,6 +121,12 @@ public abstract class BaseActivity extends AppCompatActivity {
     public static interface RegisterForActivityResultListener {
 
         void onResult(ActivityResult result);
+
+    }
+
+    public static interface RegisterForPermissionsResultListener {
+
+        void onResult(Map<String, Boolean> result);
 
     }
 

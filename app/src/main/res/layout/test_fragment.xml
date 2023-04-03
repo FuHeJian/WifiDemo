@@ -9,35 +9,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.AppBarLayout
+        <com.example.wifidemo1.customview.MyGlSurfaceView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
-            <com.google.android.material.search.SearchBar
-                android:id="@+id/searchbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="hello world"
-                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed">
-
-            </com.google.android.material.search.SearchBar>
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-
-        <com.google.android.material.search.SearchView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_anchor="@id/searchbar">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/searchSuggest"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            </androidx.recyclerview.widget.RecyclerView>
-
-        </com.google.android.material.search.SearchView>
+        </com.example.wifidemo1.customview.MyGlSurfaceView>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

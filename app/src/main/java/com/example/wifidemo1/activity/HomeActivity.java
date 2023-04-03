@@ -29,6 +29,8 @@ import com.example.wifidemo1.network.PolarisSettings;
 import com.example.wifidemo1.viewmodel.HomeViewModel;
 import com.tencent.mmkv.MMKV;
 
+import tv.danmaku.ijk.media.example.activities.VideoActivity;
+
 
 /**
  * @author: fuhejian
@@ -45,9 +47,12 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         getPermission();
         initMMKV();
 
+        //TODO
         Intent intent = new Intent();
-        intent.setComponent( new ComponentName(this,SecondActivity.class));
+        intent.setComponent( new ComponentName(this, VideoActivity.class));
         startActivity(intent);
+
+        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/f6fa7896d68d8c413847506bf14074f8/6426ca9c/video/tos/cn/tos-cn-ve-15c001-alinc2/ocIJZyBAtBLB5gexEsUAofhAdcz7DDQpJtiqPD/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=1296&bt=1296&cs=0&ds=4&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiX7vI7MVJEjDpwrbPD-I&mime_type=video_mp4&qs=0&rc=NDw4NGg3OjhmaGk1OjVoN0BpMzZqdjc6Zm9wajMzNGkzM0AvNmFgXzAvNTIxMDQ1MDY1YSNlL2ExcjRfcWBgLS1kLTBzcw%3D%3D&l=20230331185709467B35511C7FF905D206&btag=8000&testst=1680260234862","test");
 
         //wifi配置
         //registerWiFiReceiver()
@@ -79,13 +84,16 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         return new HomeActivityInitViewImpl();
     }
 
+    @Override
+    protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult() {
+        return registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::dispatchRegisterForPermissionsResultListener);
+    }
     /**
      * 获取权限
      */
     private void getPermission() {
         String[] permissions = {
                 "android.permission.CHANGE_WIFI_STATE",
-                "android.permission.ACCESS_FINE_LOCATION",
                 "android.permission.ACCESS_WIFI_STATE",
                 "android.permission.CHANGE_NETWORK_STATE",
                 "android.permission.BLUETOOTH",
@@ -96,6 +104,7 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
                 "android.permission.ACCESS_FINE_LOCATION",//>=android.os.Build.VERSION_CODES.Q时需申请
                 Manifest.permission.ACCESS_NETWORK_STATE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
         };
 
         int requestCode = RequestCode.PERMISSIONS;

@@ -1,52 +1,24 @@
 package com.example.wifidemo1.socket;
 
-import android.app.WallpaperManager;
-import android.content.Context;
 import android.net.Network;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.ViewDataBinding;
 import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.wifidemo1.log.MyLog;
-import com.example.wifidemo1.oksocket.client.impl.client.PulseManager;
 import com.example.wifidemo1.oksocket.client.sdk.*;
-import com.example.wifidemo1.oksocket.client.sdk.client.ConnectionInfo;
 import com.example.wifidemo1.oksocket.client.sdk.client.OkSocketFactory;
 import com.example.wifidemo1.oksocket.client.sdk.client.OkSocketOptions;
 import com.example.wifidemo1.oksocket.client.sdk.client.action.ISocketActionListener;
 import com.example.wifidemo1.oksocket.client.sdk.client.connection.*;
-import com.example.wifidemo1.oksocket.core.iocore.interfaces.IPulseSendable;
-import com.example.wifidemo1.oksocket.core.iocore.interfaces.ISendable;
-import com.example.wifidemo1.oksocket.core.pojo.OriginalData;
 import com.example.wifidemo1.socket.sendable.OrderDataSendable;
-import com.example.wifidemo1.socket.sendable.PulseSendable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.LogRecord;
 
-import javax.net.SocketFactory;
-
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.BackpressureStrategy;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.FlowableEmitter;
-import io.reactivex.rxjava3.core.FlowableOnSubscribe;
-import io.reactivex.rxjava3.core.Observable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
@@ -119,7 +91,7 @@ public class SocketUtil {
             public void run() {
                 activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
                     @Override
-                    public void onDestroy(@NonNull LifecycleOwner owner) {
+                    public void onStop(@NonNull LifecycleOwner owner) {
                         CurrentSocket = null;
                         socket.unRegisterReceiver(iSocketActionListener);
                         socket.disconnect();

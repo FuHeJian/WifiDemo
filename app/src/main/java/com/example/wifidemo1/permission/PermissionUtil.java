@@ -66,4 +66,8 @@ public class PermissionUtil {
         return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
     }
 
+    static public boolean checkLocation(Context context){
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
 }

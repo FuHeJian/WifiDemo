@@ -35,7 +35,6 @@ public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
     public void initView(ActivityMainBinding binding, LifecycleOwner lifecycleOwner) {
         //初始化ViewPager2
         initViewPager2(binding);
-
     }
 
     /**
@@ -59,7 +58,7 @@ public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
 
             IndicatorMediator indicatorMediator = new IndicatorMediator(binding.indicator,binding.fragmentContainer);
             indicatorMediator.attach();
-        }
 
+        }
     }
 }

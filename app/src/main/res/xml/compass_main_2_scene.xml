@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        app:constraintSetEnd="@layout/compass_main_2"
+        app:constraintSetStart="@layout/compass_main"
+        app:duration="2000"
+        >
+
+        <OnClick app:clickAction="toggle" app:targetId="@id/compass"/>
+
+    </Transition>
+
+</MotionScene>

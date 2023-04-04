@@ -3,7 +3,6 @@ package com.example.wifidemo1.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -47,12 +46,15 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         getPermission();
         initMMKV();
 
-        //TODO
-        Intent intent = new Intent();
-        intent.setComponent( new ComponentName(this, VideoActivity.class));
+/*        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(this,CompassActivity.class));
         startActivity(intent);
+        finish();*/
 
-        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/f6fa7896d68d8c413847506bf14074f8/6426ca9c/video/tos/cn/tos-cn-ve-15c001-alinc2/ocIJZyBAtBLB5gexEsUAofhAdcz7DDQpJtiqPD/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=1296&bt=1296&cs=0&ds=4&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiX7vI7MVJEjDpwrbPD-I&mime_type=video_mp4&qs=0&rc=NDw4NGg3OjhmaGk1OjVoN0BpMzZqdjc6Zm9wajMzNGkzM0AvNmFgXzAvNTIxMDQ1MDY1YSNlL2ExcjRfcWBgLS1kLTBzcw%3D%3D&l=20230331185709467B35511C7FF905D206&btag=8000&testst=1680260234862","test");
+        //TODO
+        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/2050c91ec75889d258f3996cfbdaac0d/642ba2ba/video/tos/cn/tos-cn-ve-15c001-alinc2/osAi5NhgDfA84DYbP791l9bAXOnfABYR6LXjEX/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=3261&bt=3261&cs=0&ds=6&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiXo3rzMVJERXpwrbPD-I&mime_type=video_mp4&qs=0&rc=aGQ8PDc3ZTY8OzczOTc8aEBpM2c1ajw6ZjZyaTMzNGkzM0BfYzYtYzVjXzQxNV5jYDY0YSNjcS41cjRfNG5gLS1kLTBzcw%3D%3D&l=202304041100490BEE83299D84D04B67DF&btag=30000","test");
+
+        finish();
 
         //wifi配置
         //registerWiFiReceiver()

@@ -41,7 +41,7 @@ public class Settings {
     }
 
     public int getPlayer() {
-        return 0;
+        return 2;
     }
 
     public boolean getUsingMediaCodec() {
@@ -71,26 +71,26 @@ public class Settings {
 
     public boolean getEnableNoView() {
 
-        return true;
+        return false;
     }
 
     public boolean getEnableSurfaceView() {
 
-        return false;
+        return true;
     }
 
     public boolean getEnableTextureView() {
 
-        return true;
+        return false;
     }
 
     public boolean getEnableDetachedSurfaceTextureView() {
 
-        return true;
+        return false;
     }
 
     public boolean getUsingMediaDataSource() {
 
-        return true;
+        return false;
     }
 }

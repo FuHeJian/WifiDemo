@@ -31,39 +31,11 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
 
     private boolean isCompute = false;
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
+
     @Override
     public void initView(CompassMainBinding binding, LifecycleOwner lifecycleOwner) {
 
-        //获取经纬度
-        BaseActivity thisActivity = (BaseActivity) binding.getRoot().getContext();
-        if (PermissionUtil.checkLocation(thisActivity)) {
-            dispatchLocation(binding,thisActivity);
-        } else {
-            thisActivity.addRegisterForPermissionsResultListener(new BaseActivity.RegisterForPermissionsResultListener() {
-                int re = 0;
-
-                @Override
-                public void onResult(Map<String, Boolean> result) {
-                    result.forEach((p, r) -> {
-                        if (p.equals(Manifest.permission.ACCESS_COARSE_LOCATION) && r) {
-                            re++;
-                        }
-                        if (p.equals(Manifest.permission.ACCESS_FINE_LOCATION) && r) {
-                            re++;
-                        }
-                    });
-                    if (re == 2) {
-                        dispatchLocation(binding,thisActivity);
-                    }
-                    thisActivity.removeRegisterForPermissionsResultListener(this);
-                }
-
-            });
-            Intent intent = new Intent();
-            intent.setAction(thisActivity.REQUEST_PERMISSION_INTENT_ACTION);
-            thisActivity.getRegisterForPermissionsResult().launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
-        }
+//       getLocation();
 
     }
 
@@ -120,6 +92,43 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
             }
         });
 
+    }
+
+    /**
+     * 获取经纬度，并调用dispatchLocation
+     * @param binding
+     */
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private void getLocation(CompassMainBinding binding){
+        //获取经纬度
+        BaseActivity thisActivity = (BaseActivity) binding.getRoot().getContext();
+        if (PermissionUtil.checkLocation(thisActivity)) {
+            dispatchLocation(binding,thisActivity);
+        } else {
+            thisActivity.addRegisterForPermissionsResultListener(new BaseActivity.RegisterForPermissionsResultListener() {
+                int re = 0;
+
+                @Override
+                public void onResult(Map<String, Boolean> result) {
+                    result.forEach((p, r) -> {
+                        if (p.equals(Manifest.permission.ACCESS_COARSE_LOCATION) && r) {
+                            re++;
+                        }
+                        if (p.equals(Manifest.permission.ACCESS_FINE_LOCATION) && r) {
+                            re++;
+                        }
+                    });
+                    if (re == 2) {
+                        dispatchLocation(binding,thisActivity);
+                    }
+                    thisActivity.removeRegisterForPermissionsResultListener(this);
+                }
+
+            });
+            Intent intent = new Intent();
+            intent.setAction(thisActivity.REQUEST_PERMISSION_INTENT_ACTION);
+            thisActivity.getRegisterForPermissionsResult().launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
+        }
     }
 
 }

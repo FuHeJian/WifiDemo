@@ -14,13 +14,10 @@
         app:layoutDescription="@xml/compass_main_2_scene"
         >
 
-        <com.example.wifidemo1.customview.Compass
+        <com.example.wifidemo1.customview.MySurfaceView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:id="@+id/compass"
-            android:background="@drawable/compass"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintWidth_percent="0.7"
-            app:layout_constraintDimensionRatio="1:1"
             />
 
         <androidx.constraintlayout.helper.widget.Flow

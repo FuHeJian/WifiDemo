@@ -22,7 +22,6 @@ public class Deps implements Plugin<Project> {
         public String ijkplayerJava =  "tv.danmaku.ijk.media:ijkplayer-java:"+ijkplayer;
         public String ijkplayerArmV7a =  "tv.danmaku.ijk.media:ijkplayer-armv7a:"+ijkplayer;
         public String ijkplayerExo = "tv.danmaku.ijk.media:ijkplayer-exo:"+ijkplayer;
-
     }
 
 }

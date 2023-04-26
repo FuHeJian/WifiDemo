@@ -1,4 +1,4 @@
-package com.example.wifidemo1.JNITest;
+package com.example.wifidemo1.test.JNITest;
 
 /**
  * @author: fuhejian

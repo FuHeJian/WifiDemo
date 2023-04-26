@@ -113,10 +113,10 @@ static inline int strict_pthread_once(pthread_once_t *once_control, void (*init_
 {
     ASSERT_PTHREAD(pthread_once, once_control, init_routine);
 }
-
+t     strict_pthread_mutex_init
+#define pthread_mutex_dest
 #define pthread_join           strict_pthread_join
-#define pthread_mutex_init     strict_pthread_mutex_init
-#define pthread_mutex_destroy  strict_pthread_mutex_destroy
+#define pthread_mutex_iniroy  strict_pthread_mutex_destroy
 #define pthread_mutex_lock     strict_pthread_mutex_lock
 #define pthread_mutex_unlock   strict_pthread_mutex_unlock
 #define pthread_cond_init      strict_pthread_cond_init

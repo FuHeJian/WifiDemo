@@ -3,6 +3,7 @@ package com.example.wifidemo1.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,8 +29,6 @@ import com.example.wifidemo1.network.PolarisSettings;
 import com.example.wifidemo1.viewmodel.HomeViewModel;
 import com.tencent.mmkv.MMKV;
 
-import tv.danmaku.ijk.media.example.activities.VideoActivity;
-
 
 /**
  * @author: fuhejian
@@ -46,15 +45,15 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         getPermission();
         initMMKV();
 
-/*        Intent intent = new Intent();
+        Intent intent = new Intent();
         intent.setComponent(new ComponentName(this,CompassActivity.class));
         startActivity(intent);
-        finish();*/
+        finish();
 
         //TODO
-        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/2050c91ec75889d258f3996cfbdaac0d/642ba2ba/video/tos/cn/tos-cn-ve-15c001-alinc2/osAi5NhgDfA84DYbP791l9bAXOnfABYR6LXjEX/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=3261&bt=3261&cs=0&ds=6&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiXo3rzMVJERXpwrbPD-I&mime_type=video_mp4&qs=0&rc=aGQ8PDc3ZTY8OzczOTc8aEBpM2c1ajw6ZjZyaTMzNGkzM0BfYzYtYzVjXzQxNV5jYDY0YSNjcS41cjRfNG5gLS1kLTBzcw%3D%3D&l=202304041100490BEE83299D84D04B67DF&btag=30000","test");
+/*        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/2050c91ec75889d258f3996cfbdaac0d/642ba2ba/video/tos/cn/tos-cn-ve-15c001-alinc2/osAi5NhgDfA84DYbP791l9bAXOnfABYR6LXjEX/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=3261&bt=3261&cs=0&ds=6&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiXo3rzMVJERXpwrbPD-I&mime_type=video_mp4&qs=0&rc=aGQ8PDc3ZTY8OzczOTc8aEBpM2c1ajw6ZjZyaTMzNGkzM0BfYzYtYzVjXzQxNV5jYDY0YSNjcS41cjRfNG5gLS1kLTBzcw%3D%3D&l=202304041100490BEE83299D84D04B67DF&btag=30000","test");
 
-        finish();
+        finish();*/
 
         //wifi配置
         //registerWiFiReceiver()

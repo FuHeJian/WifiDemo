@@ -6,9 +6,9 @@ import androidx.annotation.Nullable;
 import androidx.databinding.ViewDataBinding;
 import androidx.lifecycle.ViewModel;
 
-import com.example.wifidemo1.BR;
 import com.example.wifidemo1.activity.i.InitView;
 import com.example.wifidemo1.activity.impl.EmptyInitView;
+import com.example.wifidemo1.activity.theme.ThemeUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -43,23 +43,50 @@ public abstract class BaseDataBindingActivity<T extends ViewDataBinding> extends
         mDataBinding.setLifecycleOwner(this);
         ViewModel viewModel = null;
         Class<ViewModel> viewModelClass = getViewModel();
+
+        //设置全屏模式
+        ThemeUtil.INSTANCE.setSystemStatusBar(this,true,true);
+
         if (viewModelClass != null) {
             viewModel = getViewModel(getViewModel());
-            mDataBinding.setVariable(BR.viewModel, viewModel);
+            int id = getRestoreViewModelBRId();
+            if(id != -1){
+                mDataBinding.setVariable(id, viewModel);
+            }
         }
 
         setContentView(mDataBinding.getRoot());
 
-        //初始化view
         mInitViewCallback = createIntiView();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //初始化view,放在start的目的是，fragment的view 创建会晚于activity的onCreate，
+        //如果initView放在onCreate初始化可能会失败
+        //而fragment的view初始化正是在onStart之后
         //主线程初始化
-        mInitViewCallback.initView(mDataBinding,this);
+        mInitViewCallback.initView(mDataBinding, this);
 
         //异步初始化
         mWorker.schedule(() -> {//runnable 的 lambda
-            mInitViewCallback.initViewAsync(mDataBinding,this);
+            mInitViewCallback.initViewAsync(mDataBinding, this);
             mWorker.dispose();
         });
+
+    }
+
+
+    /**
+     * 恢复ViewModel 返回BR.id
+     *
+     * @return
+     */
+    public int getRestoreViewModelBRId() {
+        return -1;
     }
 
     /**
@@ -105,5 +132,4 @@ public abstract class BaseDataBindingActivity<T extends ViewDataBinding> extends
         }
         mWorker = null;
     }
-
 }

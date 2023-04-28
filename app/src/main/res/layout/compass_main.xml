@@ -14,31 +14,16 @@
         android:clipChildren="false"
         >
 
-        <com.example.wifidemo1.customview.MyProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="match_parent"
-            android:layout_height="30dp">
+       <com.example.wifidemo1.customview.HolyGrailBrokeLine
+           android:id="@+id/progressBar"
+           android:layout_width="match_parent"
+           android:layout_height="0dp"
+           app:layout_constraintHeight_percent="0.5"
+           android:paddingLeft="10dp"
+           android:paddingRight="10dp"
+           >
 
-            <View
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-            </View>
-
-            <View
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-            </View>
-        </com.example.wifidemo1.customview.MyProgressBar>
+       </com.example.wifidemo1.customview.HolyGrailBrokeLine>
 
         <androidx.constraintlayout.helper.widget.Flow
             android:id="@+id/flow"

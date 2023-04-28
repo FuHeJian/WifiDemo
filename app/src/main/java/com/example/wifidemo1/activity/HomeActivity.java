@@ -132,4 +132,8 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         //this::引用lambda的简化用法
         return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
     }
+
+
+
+
 }

@@ -8,7 +8,7 @@ plugins {
 }
 
 dependencies {
-    project.afterEvaluate{
+    /*project.afterEvaluate{
         def artifactType = AndroidArtifacts.ARTIFACT_TYPE
         registerTransform(TransFormTest.class, noneTransformSpec -> {
             noneTransformSpec.from.attribute(artifactType,  AndroidArtifacts.ArtifactType.CLASSES.type);
@@ -24,5 +24,5 @@ dependencies {
             noneTransformSpec.from.attribute(artifactType,  AndroidArtifacts.ArtifactType.ASM_INSTRUMENTED_JARS.type);
             noneTransformSpec.to.attribute(artifactType, AndroidArtifacts.ArtifactType.JACOCO_ASM_INSTRUMENTED_JARS.type);
         })
-    }
+    }*/
 }

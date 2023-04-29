@@ -1,3 +1,8 @@
+import com.android.build.gradle.BaseExtension;
+import com.android.build.gradle.internal.TaskManager;
+import com.android.build.gradle.internal.dependency.JetifyTransform;
+
+import plugin.*;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
@@ -8,7 +13,8 @@ import org.gradle.api.Project;
 public class Deps implements Plugin<Project> {
     @Override
     public void apply(Project project) {
-
+//        BaseExtension byType = project.getExtensions().getByType(BaseExtension.class);
+//        byType.registerTransform(new TestTransform(project));
     }
 
     public static final DependenciesClass dependencies = new DependenciesClass();

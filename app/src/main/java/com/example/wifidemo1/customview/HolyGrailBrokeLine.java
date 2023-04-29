@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Range;
 import android.view.GestureDetector;
@@ -30,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * com.example.wifidemo1.customview
- *
+ * <p>
  * fhj
  */
 
@@ -51,6 +53,15 @@ public class HolyGrailBrokeLine extends View {
 
     public HolyGrailBrokeLine(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+
+        float[] interval = {mPointRadius / 2, mPointRadius / 4};
+
+        DashPathEffect dashPathEffect = new DashPathEffect(interval, 0);
+        mDashPathPaint.setColor(Color.WHITE);
+        mDashPathPaint.setStyle(Paint.Style.STROKE);
+        mDashPathPaint.setStrokeWidth(mPointRadius / 6);
+        mDashPathPaint.setPathEffect(dashPathEffect);
+
     }
 
 
@@ -83,6 +94,7 @@ public class HolyGrailBrokeLine extends View {
 
     /**
      * 获取时间轴上的值
+     *
      * @return {@link LinePoint}
      */
     public ArrayList<LinePoint> getLinePoints() {
@@ -111,6 +123,16 @@ public class HolyGrailBrokeLine extends View {
         float x;//x坐标
 
         float y;//y坐标
+
+        /**
+         * 是否虚线标记
+         */
+        boolean isDashPath = false;
+
+        /**
+         * 图形
+         */
+        Drawable drawable;
 
         /**
          * 是否被标记
@@ -148,11 +170,18 @@ public class HolyGrailBrokeLine extends View {
 
     private Paint mPaint = new Paint();
 
+    private Paint mDashPathPaint = new Paint();
+
     private boolean mIsHasInitTCoord;
 
     private Path mPath = new Path();
     Range<Float> mXVisibleRange = new Range<Float>(0f, 0f);
     private float mVisibleWidth;
+
+    /**
+     * 上一次点击Point
+     */
+    LinePoint mLastClickPoint;
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -287,19 +316,37 @@ public class HolyGrailBrokeLine extends View {
 
         //更新点
         if (mSingleClickedXIndex != -1 && mSingleClickedYIndex != -1 && hasNewClicked) {
+
             LinePoint linePoint = mLinePoints.get(mSingleClickedXIndex);
+
             Line line = mLines.get(mSingleClickedXIndex);
             float y = mYCoord.get(mSingleClickedYIndex).y;
 
             if (linePoint.enable && linePoint.x == line.x && linePoint.y == y) {
 
-                linePoint.y = mYCoord.get(mYCoord.size() / 2).y;
+                if (!linePoint.isDashPath) {
+                    if (mLastClickPoint != null) {
+                        mLastClickPoint.isDashPath = false;
+                    }
+                    linePoint.isDashPath = true;
 
-                linePoint.value = mYCoord.get(mYCoord.size() / 2).value;
+                    mLastClickPoint = linePoint;
+                } else {
+                    linePoint.y = mYCoord.get(mYCoord.size() / 2).y;
 
-                linePoint.enable = false;
+                    linePoint.value = mYCoord.get(mYCoord.size() / 2).value;
+
+                    linePoint.enable = false;
+
+                    linePoint.isDashPath = false;
+                }
 
             } else {
+
+                if (mLastClickPoint != null) {
+                    mLastClickPoint.isDashPath = false;
+                }
+
                 linePoint.y = y;
 
                 linePoint.x = line.x;
@@ -309,6 +356,11 @@ public class HolyGrailBrokeLine extends View {
                 linePoint.duration = line.duration;
 
                 linePoint.enable = true;
+
+                linePoint.isDashPath = true;
+
+                mLastClickPoint = linePoint;
+
             }
 
             hasNewClicked = false;
@@ -349,6 +401,12 @@ public class HolyGrailBrokeLine extends View {
         for (int i = 0; i < mLinePoints.size(); i += skip) {
             if (mLinePoints.get(i).enable && mXVisibleRange.contains(mLinePoints.get(i).x)) {
                 canvas.drawCircle(mLinePoints.get(i).x, mLinePoints.get(i).y, mPointRadius, mPaint);
+
+                if (mLinePoints.get(i).isDashPath) {
+                    canvas.drawLine(mXVisibleRange.getLower(), mLinePoints.get(i).y, mLinePoints.get(i).x, mLinePoints.get(i).y, mDashPathPaint);
+                    canvas.drawLine(mLinePoints.get(i).x, 0, mLinePoints.get(i).x, getHeight(), mDashPathPaint);
+                }
+
             }
         }
         canvas.restoreToCount(saveCount);
@@ -367,7 +425,6 @@ public class HolyGrailBrokeLine extends View {
         public boolean onScale(@NonNull ScaleGestureDetector detector) {
 
             float scale = detector.getScaleFactor();
-
             if (scale > 1) {
                 mScale = mMaxScale;
             } else {

@@ -18,25 +18,27 @@ public class TestMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        System.out.println();
+
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
 
-/*      //方法执行之前打印
-        mv.visitLdcInsn(" before method exec");
-        mv.visitLdcInsn(" [ASM 测试] method in " + owner + " ,name=" + name);
-        mv.visitMethodInsn(INVOKESTATIC,
-                "android/util/Log", "i", "(Ljava/lang/String;Ljava/lang/String;)I", false);
-        mv.visitInsn(POP);
+        if (owner.contains("/Thread") && name.contains("init")) {
+            //方法执行之前打印
+/*            mv.visitLdcInsn(" before method exec");
+//            mv.visitLdcInsn(" [ASM 测试] method in " + owner + " ,name=" + name);
+            mv.visitMethodInsn(INVOKESTATIC,
+                    "android/util/Log", "i", "(Ljava/lang/String;Ljava/lang/String;)I", false);
+            mv.visitInsn(POP);*/
 
+/*            visitMethodInsn(INVOKESTATIC, "java/util/concurrent/Executors", "newFixedThreadPool", "(I)Ljava/util/concurrent/ExecutorService;", false);
+            visitInsn(POP);
 
+            visitMethodInsn(INVOKEINTERFACE, "java/util/concurrent/ExecutorService", "submit", "(Ljava/lang/Runnable;)Ljava/util/concurrent/Future;", true);
+            visitInsn(POP);*/
 
-        //方法执行之后打印
-        mv.visitLdcInsn(" after method exec");
-        mv.visitLdcInsn(" method in " + owner + " ,name=" + name);
-        mv.visitMethodInsn(INVOKESTATIC,
-                "android/util/Log", "i", "(Ljava/lang/String;Ljava/lang/String;)I", false);
-        mv.visitInsn(POP);
-*/
+        }else {
+
+        }
+
 
     }
 
@@ -55,6 +57,17 @@ public class TestMethodVisitor extends MethodVisitor {
         super.visitLabel(label);
     }
 
+    @Override
+    public void visitInsn(int opcode) {
+        super.visitInsn(opcode);
+    }
 
+    @Override
+    public void visitTypeInsn(int opcode, String type) {
+/*        if(!type.contains("java/lang/Thread")){
+
+        }*/
+        super.visitTypeInsn(opcode, type);
+    }
 
 }

@@ -20,7 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ScaleGestureDetectorCompat;
 
-import com.bytedance.tools.codelocator.action.InvokeViewAction;
+import com.example.wifidemo1.activity.impl.LoadClassLoader;
 import com.google.android.material.internal.ViewUtils;
 
 import java.nio.channels.FileLock;
@@ -175,7 +175,9 @@ public class HolyGrailBrokeLine extends View {
     private boolean mIsHasInitTCoord;
 
     private Path mPath = new Path();
+
     Range<Float> mXVisibleRange = new Range<Float>(0f, 0f);
+
     private float mVisibleWidth;
 
     /**
@@ -409,6 +411,7 @@ public class HolyGrailBrokeLine extends View {
 
             }
         }
+
         canvas.restoreToCount(saveCount);
         mPath.reset();
         mPaint.reset();
@@ -425,6 +428,7 @@ public class HolyGrailBrokeLine extends View {
         public boolean onScale(@NonNull ScaleGestureDetector detector) {
 
             float scale = detector.getScaleFactor();
+
             if (scale > 1) {
                 mScale = mMaxScale;
             } else {
@@ -448,11 +452,15 @@ public class HolyGrailBrokeLine extends View {
     });
 
     private float mSingleClickedX;
+
     private float mSingleClickedY;
+
     private int mSingleClickedXIndex;
+
     private int mSingleClickedYIndex;
 
     private boolean hasNewClicked = false;
+
     private GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
@@ -476,6 +484,8 @@ public class HolyGrailBrokeLine extends View {
 
         @Override
         public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
+
+            if(e2.getPointerCount()>1)return false;
 
             mScrollLength += (-distanceX);
 
@@ -526,6 +536,8 @@ public class HolyGrailBrokeLine extends View {
         mScaleGestureDetector.onTouchEvent(event);
 
         mGestureDetector.onTouchEvent(event);
+
+        getParent().requestDisallowInterceptTouchEvent(true);
 
         return true;
     }

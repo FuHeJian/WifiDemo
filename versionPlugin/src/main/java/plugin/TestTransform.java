@@ -16,6 +16,7 @@ import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Property;
+import org.gradle.internal.impldep.org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -92,8 +93,8 @@ public class TestTransform extends Transform {
                 System.out.println("test" + directoryInput.getName());
                 try {
                     transformDir(directoryInput.getFile(),outFile);
-                } catch (IOException e) {
-
+                } catch (Exception e) {
+                    System.out.println("");
                 }
 
             });
@@ -101,10 +102,11 @@ public class TestTransform extends Transform {
             jarInputs.forEach(jarInput -> {
                 File outFile = outputProvider.getContentLocation(jarInput.getName(),jarInput.getContentTypes(),jarInput.getScopes(), Format.JAR);
 
+                System.out.println("test" + jarInput.getName());
                 try {
                     FileUtils.copyFile(jarInput.getFile(),outFile);
                 } catch (Exception e) {
-
+                    System.out.println("");
                 }
 
             });
@@ -113,7 +115,7 @@ public class TestTransform extends Transform {
     }
 
 
-    private static void transformDir(File input, File dest) throws IOException {
+    private static void transformDir(File input, File dest) throws Exception {
         if (dest.exists()) {
             FileUtils.forceDelete(dest);
         }
@@ -131,7 +133,7 @@ public class TestTransform extends Transform {
                 try {
                     FileUtils.touch(destFile);
                 } catch (IOException e) {
-
+                    System.out.println("");
                 }
                 transformSingleFile(file, destFile);
             }
@@ -143,14 +145,16 @@ public class TestTransform extends Transform {
     }
 
     private static void weave(String inputPath, String outputPath) {
+        if(!inputPath.contains(".class"))return;
         try {
             FileInputStream is = new FileInputStream(inputPath);
             ClassReader cr = new ClassReader(is);
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             TestMethodClassAdapter adapter = new TestMethodClassAdapter(cw);
             cr.accept(adapter, 0);
             FileOutputStream fos = new FileOutputStream(outputPath);
-            fos.write(cw.toByteArray());
+            byte[] bytes = cw.toByteArray();
+            fos.write(bytes);
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();

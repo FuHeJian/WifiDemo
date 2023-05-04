@@ -19,8 +19,6 @@
            android:layout_width="match_parent"
            android:layout_height="0dp"
            app:layout_constraintHeight_percent="0.5"
-           android:paddingLeft="10dp"
-           android:paddingRight="10dp"
            >
 
        </com.example.wifidemo1.customview.HolyGrailBrokeLine>

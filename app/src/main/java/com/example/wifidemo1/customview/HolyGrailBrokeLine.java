@@ -4,10 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Range;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -15,15 +18,24 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ScaleGestureDetectorCompat;
 
+import com.example.wifidemo1.activity.impl.LoadClassLoader;
 import com.google.android.material.internal.ViewUtils;
 
+import java.nio.channels.FileLock;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 /**
- * @author: fuhejian
- * @date: 2023/4/28
+ * com.example.wifidemo1.customview
+ * <p>
+ * fhj
  */
+
 @SuppressLint("RestrictedApi")
 public class HolyGrailBrokeLine extends View {
 
@@ -42,349 +54,388 @@ public class HolyGrailBrokeLine extends View {
     public HolyGrailBrokeLine(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
 
+        float[] interval = {mPointRadius / 2, mPointRadius / 4};
+
+        DashPathEffect dashPathEffect = new DashPathEffect(interval, 0);
+        mDashPathPaint.setColor(Color.WHITE);
+        mDashPathPaint.setStyle(Paint.Style.STROKE);
+        mDashPathPaint.setStrokeWidth(mPointRadius / 6);
+        mDashPathPaint.setPathEffect(dashPathEffect);
 
     }
 
-    float lineMargin = 0;//每条线的间隔
-    int lineNum = 23; //线的个数
-    private Paint mPaint = new Paint();
 
-    private float lineWidth = ViewUtils.dpToPx(getContext(), 1);//线宽
-    private float textSize = ViewUtils.dpToPx(getContext(), 15);
+    private float mLinesStartX;
+    private float mLinesEndX;
+    private float mLinesAllWidth;
+    private float mScrollLength;
 
-    private float mRadius = ViewUtils.dpToPx(getContext(), 8);
+    private float mLineWidth = ViewUtils.dpToPx(getContext(), 2);
 
-    private String[] texts = {
+    private float mTextSize = ViewUtils.dpToPx(getContext(), 16);
+
+    private float mPointRadius = ViewUtils.dpToPx(getContext(), 8);
+
+    private float mLineMargin;
+
+    private float mYCoordWidth;
+
+    private float mTextHeight;
+
+    private float mTextWidth;
+
+    private int mLinesNum = 24;
+
+    private ArrayList<YCoord> mYCoord = new ArrayList<>(mLinesNum * 2);
+
+    private ArrayList<Line> mLines = new ArrayList<>(mLinesNum * 2);
+
+    private ArrayList<LinePoint> mLinePoints = new ArrayList<>(mLinesNum * 2);
+
+    /**
+     * 获取时间轴上的值
+     *
+     * @return {@link LinePoint}
+     */
+    public ArrayList<LinePoint> getLinePoints() {
+        return mLinePoints;
+    }
+
+    private String[] mCoordTexts = {
             "+5", "+4", "+3", "+2", "+1", "0", "-1", "-2", "-3", "-4", "-5"
     };
 
-    //偶数为一小时处
+    /**
+     * 时间轴上点的实例
+     */
+    public class LinePoint {
 
-    //保存每条线是否有点
-    private ArrayList<LinePoint> mPoints = new ArrayList<>(lineNum * 2);
-    //保存每条线的位置
-    private ArrayList<Float> mLinesPosition = new ArrayList<>(lineNum * 2);
+        /**
+         * 时间
+         */
+        Duration duration;//时间
 
-    private TimeState mTimeState = TimeState.HOUR;
+        /**
+         * 纵坐标值
+         */
+        float value = 0;
 
-    private float mSmoothLength = 0;
+        float x;//x坐标
 
-    private float mEndCanvasX;
-    private float mCanvasWidth;
+        float y;//y坐标
 
-    Path mPath = new Path();
+        /**
+         * 是否虚线标记
+         */
+        boolean isDashPath = false;
+
+        /**
+         * 图形
+         */
+        Drawable drawable;
+
+        /**
+         * 是否被标记
+         */
+        boolean enable = false;
+
+        public LinePoint(Duration _duration, float _x, float _y) {
+            duration = _duration;
+            x = _x;
+            y = _y;
+        }
+
+    }
+
+    private class Line {
+
+        Duration duration;//时间
+
+        float x;//x坐标
+
+        Rect rect = new Rect();//此线事件的响应范围
+
+        public Line(Duration _duration, float _x) {
+            duration = _duration;
+            x = _x;
+        }
+
+    }
+
+    private class YCoord {
+        Rect rect = new Rect();
+        int value;
+        float y;//y坐标
+    }
+
+    private Paint mPaint = new Paint();
+
+    private Paint mDashPathPaint = new Paint();
+
+    private boolean mIsHasInitTCoord;
+
+    private Path mPath = new Path();
+
+    Range<Float> mXVisibleRange = new Range<Float>(0f, 0f);
+
+    private float mVisibleWidth;
+
+    /**
+     * 上一次点击Point
+     */
+    LinePoint mLastClickPoint;
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        int skip = mScale == 1 ? 2 : 1;
+        //绘制画布
+        //绘制坐标，初始化
 
-        if (mLinesPosition.size() == 0) {
-            for (int i = 0; i < lineNum * 2; i++) {
-                mLinesPosition.add(0f);
+        if (mYCoord.size() == 0) {
+            for (int i = 0; i < mCoordTexts.length; i++) {
+                mYCoord.add(new YCoord());
             }
         }
 
-        if (mPoints.size() == 0) {
-            for (int i = 0; i < lineNum * 2; i++) {
-                mPoints.add(new LinePoint(0, 0, false));
+        if (mLines.size() == 0) {
+            for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
+                mLines.add(new Line(Duration.of(0, ChronoUnit.HOURS), 0));
             }
         }
 
-        mPaint.setColor(Color.parseColor("#444B52"));
-        mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(lineWidth);
-        mPaint.setTextSize(textSize);
-        Rect textRect = new Rect();
+        mPaint.setColor(Color.WHITE);
+        mPaint.setAntiAlias(true);
+        mPaint.setTextSize(mTextSize);
+        if (mTextHeight == 0) {
+            Rect rect = new Rect();
+            mPaint.getTextBounds(mCoordTexts[0], 0, mCoordTexts[0].length(), rect);
+            mTextHeight = rect.height();
+            mTextWidth = rect.width();
+        }
 
-        mPaint.getTextBounds(texts[0], 0, texts[0].length(), textRect);
+        for (int i = 0; i < mCoordTexts.length; i++) {
 
-        int textHeight = textRect.height();
+            float margin = getHeight() / (mCoordTexts.length - 1);
 
-        int textWidth = textRect.width();
-        float width = getWidth() - getPaddingLeft() - getPaddingRight() - textWidth - lineMargin;
-        lineMargin = width / lineNum;
-        mCanvasWidth = width;
-        //滑动,更新原点坐标为(mSmoothLength,0)
-        canvas.translate(mSmoothLength, 0);
+            float x = 0;
+
+            float y = i * margin + mTextHeight / 2f;
+
+            canvas.drawText(mCoordTexts[i], x, y, mPaint);
+
+            YCoord yCoord = mYCoord.get(i);
+            yCoord.value = Integer.parseInt(mCoordTexts[i]);
+
+            y = i * margin;
+            yCoord.y = y;
+            Rect rect = yCoord.rect;
+            rect.left = 0;
+            rect.right = getWidth();
+            rect.top = (int) (y - margin / 2f);
+            rect.bottom = (int) (y + margin / 2f);
+
+            //初始化点的y坐标
+            if (mCoordTexts[i].equals("0")) {
+                x = mTextWidth / 4f;
+
+                if (mLinePoints.size() == 0) {
+                    for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
+                        mLinePoints.add(new LinePoint(Duration.of(0, ChronoUnit.HOURS), 0, y));
+                    }
+                }
+
+            }
+        }
+
+        mLinesStartX = mTextWidth * 2;
+
+        mVisibleWidth = getWidth() - mLinesStartX;
+
+        mXVisibleRange = Range.create(mLinesStartX + Math.abs(mScrollLength), mLinesStartX + Math.abs(mScrollLength) + mVisibleWidth + mLineWidth);
+
+        //绘制画布的线
+        int saveCount = canvas.save();
+        canvas.translate(mScrollLength, 0);
+        if (mScale == 1) {
+            mLineMargin = (getWidth() - mLinesStartX) / mLinesNum;
+        } else {
+            mLineMargin = ((getWidth() - mLinesStartX) / mLinesNum) * 2;
+        }
+
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(mLineWidth);
 
         float startX = 0;
+        for (int i = 0; i < mLinesNum * mScale; i++) {
 
-        if (mScale == 2) {
-            //半小时
-            mTimeState = TimeState.MINUTE;
+            startX = mLinesStartX + i * mLineWidth + i * mLineMargin;
 
-            //画线
-            for (int i = 0; i < lineNum * 2; i++) {
-                startX = i * lineMargin * mScale + i * lineWidth + getPaddingLeft() + textWidth + lineMargin;
+            int relativeI = i * skip;
 
-                //判断是否移除屏幕
-                if (startX - Math.abs(mSmoothLength) >= (getPaddingLeft() + textWidth + lineMargin)) {
-                    canvas.drawLine(startX, textHeight / 2f, startX, getHeight(), mPaint);
-
-                    if ((mClickX + Math.abs(mSmoothLength)) > (startX - (lineMargin / 2f)) && (mClickX + Math.abs(mSmoothLength)) < (startX + lineMargin / 2f) && hasClicked) {
-
-                        hasClicked = false;
-                        if (mPoints.get(i).enable) {
-                            //同一横坐标的不同位置
-                            if (mPoints.get(i).y != mClickY) {
-                                mClickX = startX;
-                                mPoints.get(i).y = mClickY;
-                            } else {
-                                mPoints.get(i).enable = false;
-                            }
-                        } else {
-                            mClickX = startX;
-                            mPoints.get(i).x = mClickX;
-                            mPoints.get(i).y = mClickY;
-                            mPoints.get(i).enable = true;
-                        }
-
-                    }
-
-                } else {
-
-                }
-
-                mLinesPosition.set(i, startX);
-
+            if (mXVisibleRange.contains(startX)) {
+                canvas.drawLine(startX, 0, startX, getHeight(), mPaint);
             }
-        } else {
-            //一小时
-            mTimeState = TimeState.HOUR;
-            //画线
-            for (int i = 0; i < lineNum; i++) {
-                startX = i * lineMargin * mScale + i * lineWidth + getPaddingLeft() + textWidth + lineMargin;
-                if (startX - Math.abs(mSmoothLength) >= (getPaddingLeft() + textWidth + lineMargin)) {
-                    canvas.drawLine(startX, textHeight / 2f, startX, getHeight(), mPaint);
-                    if ((mClickX + Math.abs(mSmoothLength)) > startX - lineMargin / 2f && (mClickX + mSmoothLength) < (startX + lineMargin / 2f) && hasClicked) {
+            Line line = mLines.get(relativeI);
 
-                        if (mPoints.get(i).enable) {
-                            //同一横坐标的不同位置
-                            if (mPoints.get(i).y != mClickY) {
-                                mClickX = startX;
-                                mPoints.get(i).y = mClickY;
-                            } else {
-                                mPoints.get(i).enable = false;
-                            }
-                        } else {
-                            mClickX = startX;
-                            mPoints.get(i).x = mClickX;
-                            mPoints.get(i).y = mClickY;
-                            mPoints.get(i).enable = true;
-                        }
-                        hasClicked = false;
-                    }
-                }
+            line.x = startX;
 
-                mLinesPosition.set(i*2, startX);
+            Rect lineRect = line.rect;
 
-            }
+            lineRect.left = (int) (startX - mLineMargin / 2f);
+
+            lineRect.right = (int) (startX + mLineMargin / 2f);
+            lineRect.top = 0;
+            lineRect.bottom = getHeight();
+
+            ChronoUnit chronoUnit = mScale == 1 ? ChronoUnit.HOURS : ChronoUnit.MINUTES;
+
+            int timeScale = mScale == 1 ? 1 : 30;
+
+            line.duration = line.duration.plus((long) i * timeScale, chronoUnit);
+
+            mLines.set(relativeI, line);
+
+/*            String time = String.format("%d", line.duration.toHours()) + " : " + String.format("%d", line.duration.toMinutes() - line.duration.toHours() * 60);
+
+              float timeWidth = mPaint.measureText(time);
+
+              canvas.drawText(time, startX - timeWidth / 2, - mTextWidth / 2f, mPaint);*/
+
+            LinePoint linePoint = mLinePoints.get(relativeI);
+
+            linePoint.x = startX;
+
+            linePoint.duration = linePoint.duration.plus(i * timeScale, chronoUnit);
+
+            mLinePoints.set(relativeI, linePoint);
+
         }
 
-        //绘制线
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.parseColor("#0ABD46"));
-        mPaint.setStrokeWidth(mRadius);
-        mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPath.reset();
-        for (int i = 0; i < mPoints.size(); i=i*2) {
-            if (mLinesPosition.get(i) - Math.abs(mSmoothLength) >= (getPaddingLeft() + textWidth + lineMargin)) {
+        //多留出mLineWidth*3的可滑动距离防止手机边缘无法触摸
+        mCanScrollRange = Range.create(-(startX + mLineWidth * 3 - mVisibleWidth), 0f);
 
-                if (mPoints.get(i).enable) {
-                    if (mPath.isEmpty()) {
-                        mPath.moveTo(mPoints.get(i).x, mPoints.get(i).y);
-                    } else {
-                        mPath.lineTo(mPoints.get(i).x, mPoints.get(i).y);
+        //更新点
+        if (mSingleClickedXIndex != -1 && mSingleClickedYIndex != -1 && hasNewClicked) {
+
+            LinePoint linePoint = mLinePoints.get(mSingleClickedXIndex);
+
+            Line line = mLines.get(mSingleClickedXIndex);
+            float y = mYCoord.get(mSingleClickedYIndex).y;
+
+            if (linePoint.enable && linePoint.x == line.x && linePoint.y == y) {
+
+                if (!linePoint.isDashPath) {
+                    if (mLastClickPoint != null) {
+                        mLastClickPoint.isDashPath = false;
                     }
+                    linePoint.isDashPath = true;
+
+                    mLastClickPoint = linePoint;
                 } else {
-                    if (mPath.isEmpty()) {
-                        mPath.moveTo(mLinesPosition.get(i), getHeight() / 2f);
-                    } else {
-                        mPath.lineTo(mLinesPosition.get(i), getHeight() / 2f);
-                    }
+                    linePoint.y = mYCoord.get(mYCoord.size() / 2).y;
+
+                    linePoint.value = mYCoord.get(mYCoord.size() / 2).value;
+
+                    linePoint.enable = false;
+
+                    linePoint.isDashPath = false;
                 }
 
             } else {
-                //移除不可见的path
-                mPath.rewind();
+
+                if (mLastClickPoint != null) {
+                    mLastClickPoint.isDashPath = false;
+                }
+
+                linePoint.y = y;
+
+                linePoint.x = line.x;
+
+                linePoint.value = mYCoord.get(mYCoord.size() / 2).value;
+
+                linePoint.duration = line.duration;
+
+                linePoint.enable = true;
+
+                linePoint.isDashPath = true;
+
+                mLastClickPoint = linePoint;
+
+            }
+
+            hasNewClicked = false;
+
+        }
+        //缩放动作后更新点的x位置
+        for (int i = 0; i < mLinePoints.size(); i++) {
+
+            if (mLinePoints.get(i).enable) {
+
+                mLinePoints.get(i).x = mLines.get(i).x;
+
+            }
+
+        }
+
+        //绘制kLine
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(Color.GREEN);
+        mPaint.setStrokeWidth(mPointRadius);
+        mPaint.setStrokeJoin(Paint.Join.ROUND);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        for (int i = 0; i < mLines.size(); i += skip) {
+            if (mXVisibleRange.contains(mLines.get(i).x)) {
+                if (mPath.isEmpty()) {
+                    mPath.moveTo(mLinePoints.get(i).x, mLinePoints.get(i).y);
+                } else {
+                    mPath.lineTo(mLinePoints.get(i).x, mLinePoints.get(i).y);
+                }
             }
         }
         canvas.drawPath(mPath, mPaint);
 
-        //绘制点
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(Color.WHITE);
-        for (int i = 0; i < mPoints.size(); i *=2) {
-            if (mLinesPosition.get(i) - Math.abs(mSmoothLength) >= (getPaddingLeft() + textWidth + lineMargin) && mPoints.get(i).enable) {
-                drawPoint(canvas, mPoints.get(i).x, mPoints.get(i).y, mRadius, mPaint);
+        //绘制LinePoint
+
+        for (int i = 0; i < mLinePoints.size(); i += skip) {
+            if (mLinePoints.get(i).enable && mXVisibleRange.contains(mLinePoints.get(i).x)) {
+                canvas.drawCircle(mLinePoints.get(i).x, mLinePoints.get(i).y, mPointRadius, mPaint);
+
+                if (mLinePoints.get(i).isDashPath) {
+                    canvas.drawLine(mXVisibleRange.getLower(), mLinePoints.get(i).y, mLinePoints.get(i).x, mLinePoints.get(i).y, mDashPathPaint);
+                    canvas.drawLine(mLinePoints.get(i).x, 0, mLinePoints.get(i).x, getHeight(), mDashPathPaint);
+                }
+
             }
         }
 
-        mEndCanvasX = startX;
-        canvas.translate(-mSmoothLength, 0);
-
+        canvas.restoreToCount(saveCount);
+        mPath.reset();
         mPaint.reset();
 
-        float yy = ((float) getHeight() - texts.length * textHeight) / (texts.length - 1);//坐标间的间隙
-
-        //绘制坐标
-        //绘制竖坐标
-        mPaint.setColor(Color.parseColor("#444B52"));
-        mPaint.setAntiAlias(true);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setTextSize(textSize);
-        for (int i = 0; i < texts.length; i++) {
-            String text = texts[i];
-            float x = getPaddingLeft();
-            float y = yy * i + (i + 1) * textHeight;
-            canvas.drawText(text, x, y, mPaint);
-        }
-
-        //初始化竖坐标的响应范围
-        int lastRangeY = 0;
-        int rectLeft = (int) (getPaddingLeft() + textWidth + lineMargin) - 1;
-        if (mCoordRects.size() == 0) {
-
-            for (int i = 0; i < texts.length; i++) {
-
-                int y = (int) (yy * i + (i + 1) * textHeight);
-
-                if (i == texts.length - 1) {
-
-                    Rect rect = new Rect(0, lastRangeY, getWidth(), getHeight());
-
-                    mCoordRects.add(new RectCoord(rect, getHeight() - mRadius));
-
-                } else {
-
-                    Rect rect = new Rect(0, lastRangeY, getWidth(), y + ((int) yy) / 2);
-
-                    lastRangeY = y + ((int) yy) / 2;
-
-                    mCoordRects.add(new RectCoord(rect, y - textHeight / 2));
-
-                }
-            }
-        }
-
-        hasClicked = false;
-
     }
 
-    ArrayList<RectCoord> mCoordRects = new ArrayList<>();
-
-    /**
-     * 画点
-     *
-     * @param canvas
-     * @param x,y    圆心的位置
-     */
-    private void drawPoint(Canvas canvas, float x, float y, float radius, Paint paint) {
-        canvas.drawCircle(x, y, radius, paint);
-    }
-
-
-    private float getCoordYposition(float y, float x) {
-
-        for (int i = 0; i < mCoordRects.size(); i++) {
-
-            if (mCoordRects.get(i).mRect.contains((int) x, (int) y)) {
-                return mCoordRects.get(i).mY;
-            }
-
-        }
-
-        return mCoordRects.get(0).mY;
-    }
-
-    private class RectCoord {
-
-        public Rect mRect;
-        public float mY;
-
-        public RectCoord(Rect rect, float y) {
-            mRect = rect;
-            mY = y;
-        }
-
-    }
-
-    private class LinePoint {
-
-        public boolean enable = false;
-
-        public float x;
-
-        public float y;
-
-        public LinePoint(float _x, float _y, boolean _enable) {
-            x = _x;
-            y = _y;
-            enable = _enable;
-
-        }
-
-    }
-
-    float lastMoveX = 0;
-    private float mClickX;
-    private float mClickY;
-    private boolean hasClicked = false;
-    private GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-
-        @Override
-        public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-
-            float x = e.getX();
-            float y = e.getY();
-
-            mClickX = x;
-
-            mClickY = getCoordYposition(y, x);
-
-            hasClicked = true;
-
-            invalidate();
-
-            return true;
-        }
-
-    });
-
-    private int mScale = 1;
-    private int mMinScale = 1;
+    private int mScale = 1;//代表绘制时的跨度，也能表示：1 -> 小时 ，2->半小时
     private int mMaxScale = 2;
 
-    ScaleGestureDetector mScaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+    private int mMinScale = 1;
 
-
-        private boolean isHasMagnifyInvalidate = false;
-        private boolean isHasShrinkInvalidate = false;
-
+    private ScaleGestureDetector mScaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
         public boolean onScale(@NonNull ScaleGestureDetector detector) {
 
-            mScale *= detector.getScaleFactor();
+            float scale = detector.getScaleFactor();
 
-            if (mScale > mMaxScale) {
+            if (scale > 1) {
                 mScale = mMaxScale;
-
-                if (!isHasMagnifyInvalidate) {
-                    invalidate();
-                    isHasMagnifyInvalidate = true;
-                    isHasShrinkInvalidate = false;
-                }
-
             } else {
                 mScale = mMinScale;
-                if (!isHasShrinkInvalidate) {
-                    invalidate();
-                    isHasMagnifyInvalidate = false;
-                    isHasShrinkInvalidate = true;
-                }
             }
 
+            invalidate();
             return true;
         }
 
@@ -393,84 +444,102 @@ public class HolyGrailBrokeLine extends View {
             return true;
         }
 
+        @Override
+        public void onScaleEnd(@NonNull ScaleGestureDetector detector) {
+
+        }
+
     });
 
-    boolean lastInvalidate = false;
+    private float mSingleClickedX;
+
+    private float mSingleClickedY;
+
+    private int mSingleClickedXIndex;
+
+    private int mSingleClickedYIndex;
+
+    private boolean hasNewClicked = false;
+
+    private GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+
+            e.getX();
+
+            mSingleClickedX = e.getX();
+
+            mSingleClickedY = e.getY();
+
+            hasNewClicked = true;
+
+            mSingleClickedXIndex = findClickXIndex();
+
+            mSingleClickedYIndex = findClickYIndex();
+
+            invalidate();
+
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
+
+            if(e2.getPointerCount()>1)return false;
+
+            mScrollLength += (-distanceX);
+
+            if (mCanScrollRange.contains(mScrollLength)) {
+                invalidate();
+                mInvalidated = false;
+            } else {
+                mScrollLength = (Float) mCanScrollRange.clamp(mScrollLength);
+                if (!mInvalidated) {
+                    mInvalidated = true;
+                    invalidate();
+                }
+            }
+
+            return super.onScroll(e1, e2, distanceX, distanceY);
+        }
+    });
+
+    private int findClickXIndex() {
+        int skip = mScale == 1 ? 2 : 1;
+        for (int i = 0; i < mLines.size(); i += skip) {
+            Rect lineRect = mLines.get(i).rect;
+            if (lineRect.contains((int) (mSingleClickedX + Math.abs(mScrollLength)), 0)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int findClickYIndex() {
+        for (int i = 0; i < mYCoord.size(); i++) {
+            Rect coordRect = mYCoord.get(i).rect;
+            if (coordRect.contains(0, (int) mSingleClickedY)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private float mLastMoveX;
+    private Range<Float> mCanScrollRange = new Range<>(0f, 0f);
+
+    private boolean mInvalidated = false;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        mScaleGestureDetector.onTouchEvent(event);
+
         mGestureDetector.onTouchEvent(event);
-        switch (event.getActionMasked()) {
 
-            case MotionEvent.ACTION_DOWN: {
-
-                lastMoveX = event.getX();
-
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-
-                float dx = event.getX() - lastMoveX;
-
-                //减少误差
-                if (Math.abs(dx) < 5) {
-                    break;
-                }
-
-                mSmoothLength += dx;
-
-                if (mSmoothLength > 0) {
-
-                    mSmoothLength = 0;
-
-                    if (!lastInvalidate) {
-                        invalidate();
-                        lastInvalidate = true;
-                    }
-
-                } else {
-                    //mSmoothLength<0
-                    if (Math.abs(mSmoothLength - mCanvasWidth) > mEndCanvasX) {
-                        mSmoothLength = -(mEndCanvasX - mCanvasWidth);
-                        if (!lastInvalidate) {
-                            invalidate();
-                            lastInvalidate = true;
-                        }
-                    } else if (Math.abs(mSmoothLength - mCanvasWidth) < mEndCanvasX) {
-                        invalidate();
-                        lastInvalidate = false;
-                    }
-                }
-
-                lastMoveX = event.getX();
-
-                break;
-            }
-
-            case MotionEvent.ACTION_UP: {
-
-                break;
-            }
-
-        }
+        getParent().requestDisallowInterceptTouchEvent(true);
 
         return true;
-    }
-
-    private enum TimeState {
-
-        MINUTE(2),
-
-        HOUR(1);
-
-        private int value;
-
-        TimeState(int v) {
-            value = v;
-        }
-
     }
 
 }

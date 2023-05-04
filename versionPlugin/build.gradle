@@ -13,3 +13,19 @@ gradlePlugin {
         }
     }
 }
+
+repositories {
+    repositories {
+        google()
+        mavenCentral()
+        jcenter()
+    }
+}
+
+dependencies {
+
+    implementation 'org.ow2.asm:asm:9.5'
+    implementation 'com.android.tools.build:gradle:7.4.2'
+    implementation 'commons-io:commons-io:2.11.0'
+
+}

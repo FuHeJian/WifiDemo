@@ -291,6 +291,9 @@ public class MaxMinFourSeekbar extends View {
                     }
                     if(canSlideToEnd){
                         setSliderValue(touchSlider, endIndex);
+                        if(mListener!=null){
+                            mListener.onValueSelect(touchSlider,sliders.get(touchSlider));
+                        }
                     }
 
                 }else if (moveLengthValue<0){
@@ -302,6 +305,9 @@ public class MaxMinFourSeekbar extends View {
                     }
                     if(canSlideToEnd){
                         setSliderValue(touchSlider, endIndex);
+                        if(mListener!=null){
+                            mListener.onValueSelect(touchSlider,sliders.get(touchSlider));
+                        }
                     }
                 }
             }
@@ -534,6 +540,14 @@ public class MaxMinFourSeekbar extends View {
     private boolean mCanNotTouch = false;
     public void setDisallowTouch(boolean cantouch){
         mCanNotTouch = cantouch;
+    }
+
+    private SelectListener mListener = null;
+    public void setSelectListener(SelectListener selectListener){
+        mListener = selectListener;
+    }
+    public interface SelectListener{
+        void onValueSelect(int position,Slider slider);
     }
 
 }

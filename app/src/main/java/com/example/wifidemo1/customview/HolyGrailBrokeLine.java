@@ -18,17 +18,14 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ScaleGestureDetectorCompat;
+import androidx.core.content.ContextCompat;
 
-import com.example.wifidemo1.activity.impl.LoadClassLoader;
+import com.example.wifidemo1.R;
 import com.google.android.material.internal.ViewUtils;
 
-import java.nio.channels.FileLock;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
 
 /**
  * com.example.wifidemo1.customview
@@ -76,6 +73,8 @@ public class HolyGrailBrokeLine extends View {
 
     private float mPointRadius = ViewUtils.dpToPx(getContext(), 8);
 
+    private float mPointBigRadius = ViewUtils.dpToPx(getContext(), 17);
+
     private float mLineMargin;
 
     private float mYCoordWidth;
@@ -108,52 +107,55 @@ public class HolyGrailBrokeLine extends View {
     /**
      * 时间轴上点的实例
      */
-    public class LinePoint {
+    public static class LinePoint {
 
         /**
          * 时间
          */
-        Duration duration;//时间
+        public Duration duration;//时间
 
         /**
          * 纵坐标值
          */
-        float value = 0;
+        public float value = 0;
 
-        float x;//x坐标
+        public float x;//x坐标
 
-        float y;//y坐标
+        public float y;//y坐标
+
+        /**
+         * 在第几行或者表示mYCoord的下标
+         */
+        public int lineNum = 0;
 
         /**
          * 是否虚线标记
          */
-        boolean isDashPath = false;
+        public boolean isDashPath = false;
 
         /**
          * 图形
          */
-        Drawable drawable;
+        public Drawable drawable;
 
         /**
          * 是否被标记
          */
-        boolean enable = false;
+        public boolean enable = false;
 
-        public LinePoint(Duration _duration, float _x, float _y) {
-            duration = _duration;
-            x = _x;
-            y = _y;
+        public LinePoint(int _lineNum) {
+            lineNum = _lineNum;
         }
 
     }
 
     private class Line {
 
-        Duration duration;//时间
+        public Duration duration;//时间
 
-        float x;//x坐标
+        public float x;//x坐标
 
-        Rect rect = new Rect();//此线事件的响应范围
+        public Rect rect = new Rect();//此线事件的响应范围
 
         public Line(Duration _duration, float _x) {
             duration = _duration;
@@ -163,9 +165,9 @@ public class HolyGrailBrokeLine extends View {
     }
 
     private class YCoord {
-        Rect rect = new Rect();
-        int value;
-        float y;//y坐标
+        public Rect rect = new Rect();
+        public int value;
+        public float y;//y坐标
     }
 
     private Paint mPaint = new Paint();
@@ -185,6 +187,37 @@ public class HolyGrailBrokeLine extends View {
      */
     LinePoint mLastClickPoint;
 
+    private boolean linePointsIsInitial;
+    /**
+     * 可视的第一条线
+     */
+    private int mCurrentVisibleStartLineIndex;
+    /**
+     * 可视的最后一条线
+     */
+    private int mCurrentVisibleEndLineIndex;
+
+    /**
+     * 设置数据显示到界面
+     */
+    public void setPointData(ArrayList<LinePoint> data){
+        if(data!=null){
+
+            if (mLinePoints.size() == 0) {
+                for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
+                    mLinePoints.add(new LinePoint(0));
+                }
+            }
+
+            for (int i = 0; i < data.size() && i<mLinePoints.size(); i++) {
+                LinePoint linePoint = mLinePoints.get(i);
+                LinePoint dataPoint = data.get(i);
+                linePoint.lineNum = dataPoint.lineNum;
+                linePoint.enable = dataPoint.enable;
+            }
+            invalidate();
+        }
+    }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -200,12 +233,20 @@ public class HolyGrailBrokeLine extends View {
 
         if (mLines.size() == 0) {
             for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
-                mLines.add(new Line(Duration.of(0, ChronoUnit.HOURS), 0));
+                mLines.add(new Line(null, 0));
+            }
+            linePointsIsInitial = false;
+        }
+
+        if (mLinePoints.size() == 0) {
+            for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
+                mLinePoints.add(new LinePoint(0));
             }
         }
 
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.WHITE);
+        mPaint.setStyle(Paint.Style.FILL);
+//        mPaint.setColor(Color.parseColor("#444B52"));
+        mPaint.setColor(Color.parseColor("#1AFFFFFF"));
         mPaint.setAntiAlias(true);
         mPaint.setTextSize(mTextSize);
         if (mTextHeight == 0) {
@@ -223,10 +264,46 @@ public class HolyGrailBrokeLine extends View {
 
             float y = i * margin + mTextHeight / 2f;
 
-            canvas.drawText(mCoordTexts[i], x, y, mPaint);
-
             YCoord yCoord = mYCoord.get(i);
             yCoord.value = Integer.parseInt(mCoordTexts[i]);
+
+            if (yCoord.value == 0) {
+                x += mTextHeight / 3f;
+            }
+
+            if (mSingleClickedXIndex != -1 && mSingleClickedYIndex != -1) {
+                if (hasNewClicked) {
+
+                    if (mSingleClickedYIndex == i) {
+
+                        if (!mLinePoints.get(mSingleClickedXIndex).isDashPath) {
+                            mPaint.setColor(Color.parseColor("#FFFFFF"));
+                        } else {
+
+                            if (mLinePoints.get(mSingleClickedXIndex).value != yCoord.value) {
+                                mPaint.setColor(Color.parseColor("#FFFFFF"));
+                            } else {
+                                mPaint.setColor(Color.parseColor("#1AFFFFFF"));
+                            }
+
+                        }
+
+                    } else {
+                        mPaint.setColor(Color.parseColor("#1AFFFFFF"));
+                    }
+
+                } else {
+                    if (mSingleClickedYIndex == i) {
+                        mPaint.setColor(Color.parseColor("#FFFFFF"));
+                    } else {
+                        mPaint.setColor(Color.parseColor("#1AFFFFFF"));
+                    }
+                }
+            } else {
+                mPaint.setColor(Color.parseColor("#1AFFFFFF"));
+            }
+
+            canvas.drawText(mCoordTexts[i], x, y, mPaint);
 
             y = i * margin;
             yCoord.y = y;
@@ -236,15 +313,26 @@ public class HolyGrailBrokeLine extends View {
             rect.top = (int) (y - margin / 2f);
             rect.bottom = (int) (y + margin / 2f);
 
-            //初始化点的y坐标
-            if (mCoordTexts[i].equals("0")) {
-                x = mTextWidth / 4f;
+            for (int i1 = 0; i1 < mLinePoints.size(); i1++) {
+                if(mLinePoints.get(i1).enable && mLinePoints.get(i1).lineNum == i){
+                    LinePoint linePoint = mLinePoints.get(i1);
+                    linePoint.y = y;
+                    linePoint.value = yCoord.value;
+                }
+            }
 
-                if (mLinePoints.size() == 0) {
-                    for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
-                        mLinePoints.add(new LinePoint(Duration.of(0, ChronoUnit.HOURS), 0, y));
+            //初始化点的y坐标
+            if (mCoordTexts[i].equals("0") && !linePointsIsInitial) {
+
+                for (int i1 = 0; i1 < mLinesNum * 2; i1++) {
+                    LinePoint linePoint = mLinePoints.get(i1);
+                    if(!linePoint.enable){
+                        linePoint.y = y;
+                        mLinePoints.set(i1, linePoint);
                     }
                 }
+
+                linePointsIsInitial = true;
 
             }
         }
@@ -257,17 +345,22 @@ public class HolyGrailBrokeLine extends View {
 
         //绘制画布的线
         int saveCount = canvas.save();
-        canvas.translate(mScrollLength, 0);
+
         if (mScale == 1) {
-            mLineMargin = (getWidth() - mLinesStartX) / mLinesNum;
+            mLineMargin = (getWidth() - mLinesStartX - mLinesNum * mLineWidth) / (mLinesNum - 1);
+            mScrollLength = 0;
         } else {
-            mLineMargin = ((getWidth() - mLinesStartX) / mLinesNum) * 2;
+            mLineMargin = ((getWidth() - mLinesStartX - mLinesNum * mLineWidth) / (mLinesNum) * 2 - 1);
         }
+        canvas.translate(mScrollLength, 0);
 
         mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(Color.parseColor("#444B52"));
         mPaint.setStrokeWidth(mLineWidth);
 
         float startX = 0;
+        mCurrentVisibleStartLineIndex = -1;
+        mCurrentVisibleEndLineIndex = -1;
         for (int i = 0; i < mLinesNum * mScale; i++) {
 
             startX = mLinesStartX + i * mLineWidth + i * mLineMargin;
@@ -275,6 +368,11 @@ public class HolyGrailBrokeLine extends View {
             int relativeI = i * skip;
 
             if (mXVisibleRange.contains(startX)) {
+                if (mCurrentVisibleStartLineIndex == -1) {
+                    mCurrentVisibleStartLineIndex = relativeI;
+                } else {
+                    mCurrentVisibleEndLineIndex = relativeI;
+                }
                 canvas.drawLine(startX, 0, startX, getHeight(), mPaint);
             }
             Line line = mLines.get(relativeI);
@@ -292,8 +390,9 @@ public class HolyGrailBrokeLine extends View {
             ChronoUnit chronoUnit = mScale == 1 ? ChronoUnit.HOURS : ChronoUnit.MINUTES;
 
             int timeScale = mScale == 1 ? 1 : 30;
-
-            line.duration = line.duration.plus((long) i * timeScale, chronoUnit);
+            if (line.duration == null) {
+                line.duration = Duration.of(i * timeScale, chronoUnit);
+            }
 
             mLines.set(relativeI, line);
 
@@ -307,14 +406,27 @@ public class HolyGrailBrokeLine extends View {
 
             linePoint.x = startX;
 
-            linePoint.duration = linePoint.duration.plus(i * timeScale, chronoUnit);
+            if (linePoint.duration == null) {
+
+                linePoint.duration = Duration.of(i * timeScale, chronoUnit);
+
+            }
+
+            if(!linePoint.enable){
+
+                linePoint.lineNum = mYCoord.size() / 2;
+
+            }
 
             mLinePoints.set(relativeI, linePoint);
 
         }
 
-        //多留出mLineWidth*3的可滑动距离防止手机边缘无法触摸
-        mCanScrollRange = Range.create(-(startX + mLineWidth * 3 - mVisibleWidth), 0f);
+        mPaint.setColor(Color.parseColor("#818181"));
+        if (mCurrentVisibleEndLineIndex != -1 && mCurrentVisibleStartLineIndex != -1)
+            canvas.drawLine(mLines.get(mCurrentVisibleStartLineIndex).x, mYCoord.get(mYCoord.size() / 2).y, mLines.get(mCurrentVisibleEndLineIndex).x, mYCoord.get(mYCoord.size() / 2).y, mPaint);
+
+        mCanScrollRange = Range.create(-(startX - mVisibleWidth), 0f);
 
         //更新点
         if (mSingleClickedXIndex != -1 && mSingleClickedYIndex != -1 && hasNewClicked) {
@@ -327,13 +439,18 @@ public class HolyGrailBrokeLine extends View {
             if (linePoint.enable && linePoint.x == line.x && linePoint.y == y) {
 
                 if (!linePoint.isDashPath) {
+
                     if (mLastClickPoint != null) {
                         mLastClickPoint.isDashPath = false;
                     }
+
                     linePoint.isDashPath = true;
 
                     mLastClickPoint = linePoint;
-                } else {
+
+                    linePoint.lineNum = mSingleClickedYIndex;
+
+                } else if (!canScroll) {
                     linePoint.y = mYCoord.get(mYCoord.size() / 2).y;
 
                     linePoint.value = mYCoord.get(mYCoord.size() / 2).value;
@@ -341,6 +458,12 @@ public class HolyGrailBrokeLine extends View {
                     linePoint.enable = false;
 
                     linePoint.isDashPath = false;
+
+                    linePoint.lineNum = mYCoord.size() / 2;
+
+                    mSingleClickedXIndex = -1;
+                    mSingleClickedYIndex = -1;
+
                 }
 
             } else {
@@ -353,7 +476,7 @@ public class HolyGrailBrokeLine extends View {
 
                 linePoint.x = line.x;
 
-                linePoint.value = mYCoord.get(mYCoord.size() / 2).value;
+                linePoint.value = mYCoord.get(mSingleClickedYIndex).value;
 
                 linePoint.duration = line.duration;
 
@@ -361,13 +484,50 @@ public class HolyGrailBrokeLine extends View {
 
                 linePoint.isDashPath = true;
 
+                linePoint.lineNum = mSingleClickedYIndex;
+
                 mLastClickPoint = linePoint;
 
             }
 
+
+            System.out.println(linePoint.value);
+
             hasNewClicked = false;
 
+
+            if (mListener != null) {
+                mListener.onChoosePoint(linePoint);
+            }
+
         }
+
+        //寻找最后一个LinePoint
+        LinePoint lastPoint = null;
+        int lastIndex = 0;
+        for (int i = 0; i < mLinePoints.size(); i+=skip) {
+            if(mLinePoints.get(i).enable){
+                lastPoint = mLinePoints.get(i);
+                lastIndex = i;
+            }
+        }
+
+        if(lastPoint!=null){
+            for (int i = lastIndex+skip; i < mLinePoints.size(); i+=skip) {
+                LinePoint linePoint = mLinePoints.get(i);
+                linePoint.y = lastPoint.y;
+                linePoint.value = lastPoint.y;
+                linePoint.lineNum = lastPoint.lineNum;
+            }
+        }
+
+
+        if (mSingleClickedXIndex == -1 && mSingleClickedYIndex == -1) {
+            if (mListener != null) {
+                mListener.onNothingPointChecked();
+            }
+        }
+
         //缩放动作后更新点的x位置
         for (int i = 0; i < mLinePoints.size(); i++) {
 
@@ -381,7 +541,7 @@ public class HolyGrailBrokeLine extends View {
 
         //绘制kLine
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.GREEN);
+        mPaint.setColor(Color.parseColor("#0ABD46"));
         mPaint.setStrokeWidth(mPointRadius);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -401,14 +561,39 @@ public class HolyGrailBrokeLine extends View {
         //绘制LinePoint
 
         for (int i = 0; i < mLinePoints.size(); i += skip) {
+
             if (mLinePoints.get(i).enable && mXVisibleRange.contains(mLinePoints.get(i).x)) {
-                canvas.drawCircle(mLinePoints.get(i).x, mLinePoints.get(i).y, mPointRadius, mPaint);
 
                 if (mLinePoints.get(i).isDashPath) {
+                    canvas.drawCircle(mLinePoints.get(i).x, mLinePoints.get(i).y, mPointBigRadius, mPaint);
                     canvas.drawLine(mXVisibleRange.getLower(), mLinePoints.get(i).y, mLinePoints.get(i).x, mLinePoints.get(i).y, mDashPathPaint);
                     canvas.drawLine(mLinePoints.get(i).x, 0, mLinePoints.get(i).x, getHeight(), mDashPathPaint);
+                    Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.holyline_scroll_unlock_icon);
+                    if (drawable != null) {
+                        drawable.setBounds((int) (mLinePoints.get(i).x - mPointBigRadius * 0.5), (int) (mLinePoints.get(i).y - mPointBigRadius * 2 / 3f), (int) (mLinePoints.get(i).x + mPointBigRadius * 0.5), (int) (mLinePoints.get(i).y + mPointBigRadius * 2 / 3f));
+                        drawable.draw(canvas);
+                    }
+                } else {
+                    canvas.drawCircle(mLinePoints.get(i).x, mLinePoints.get(i).y, mPointRadius, mPaint);
                 }
+            }
 
+        }
+
+        //寻找是否存在enable的点，若不存在则在中间绘制一个图标
+        for (int i = 0; i < mLinePoints.size(); i++) {
+            if (mLinePoints.get(i).enable) {
+                break;
+            } else if (i == mLinePoints.size() - 1) {
+                //绘制图标
+                float x = mLines.get(mScale == 1 ? mLinesNum - 2 : (24 / mScale / 2)).x;
+                float y = mYCoord.get(mYCoord.size() / 2).y;
+                canvas.drawCircle(x, y, mPointRadius, mPaint);
+                mPaint.setStrokeWidth(mLineWidth);
+                mPaint.setStyle(Paint.Style.STROKE);
+                mPaint.setColor(Color.BLACK);
+                canvas.drawLine(x - mPointRadius / 2, y, x + mPointRadius / 2, y, mPaint);
+                canvas.drawLine(x, y - mPointRadius / 2, x, y + mPointRadius / 2, mPaint);
             }
         }
 
@@ -416,6 +601,23 @@ public class HolyGrailBrokeLine extends View {
         mPath.reset();
         mPaint.reset();
 
+    }
+
+    public void deleteCurrentPoint() {
+        for (int i = 0; i < mLinePoints.size(); i++) {
+            if (mLinePoints.get(i).isDashPath) {
+                LinePoint linePoint = mLinePoints.get(i);
+                linePoint.value = 0;
+                linePoint.y = mYCoord.get(mYCoord.size() / 2).y;
+                linePoint.enable = false;
+                linePoint.isDashPath = false;
+                linePoint.lineNum = mYCoord.size() / 2;
+                mSingleClickedXIndex = -1;
+                mSingleClickedYIndex = -1;
+                invalidate();
+                break;
+            }
+        }
     }
 
     private int mScale = 1;//代表绘制时的跨度，也能表示：1 -> 小时 ，2->半小时
@@ -449,23 +651,26 @@ public class HolyGrailBrokeLine extends View {
 
         }
 
+
     });
 
     private float mSingleClickedX;
 
     private float mSingleClickedY;
 
-    private int mSingleClickedXIndex;
+    private int mSingleClickedXIndex = -1;
 
-    private int mSingleClickedYIndex;
+    private int mSingleClickedYIndex = -1;
 
     private boolean hasNewClicked = false;
 
+    private boolean canScroll = false;
+
+    private float scrollPointStartY = 0;
+    private float scrollPointYDistance = 0;
     private GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-
-            e.getX();
 
             mSingleClickedX = e.getX();
 
@@ -473,9 +678,9 @@ public class HolyGrailBrokeLine extends View {
 
             hasNewClicked = true;
 
-            mSingleClickedXIndex = findClickXIndex();
+            mSingleClickedXIndex = findClickXIndex(mSingleClickedX);
 
-            mSingleClickedYIndex = findClickYIndex();
+            mSingleClickedYIndex = findClickYIndex(mSingleClickedY);
 
             invalidate();
 
@@ -485,40 +690,77 @@ public class HolyGrailBrokeLine extends View {
         @Override
         public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
 
-            if(e2.getPointerCount()>1)return false;
+            if (e2.getPointerCount() > 1) return false;
+            if (canScroll) {
+                //滑动选择
 
-            mScrollLength += (-distanceX);
+                scrollPointYDistance = (e2.getY() - scrollPointStartY) / (getHeight() / mCoordTexts.length);
 
-            if (mCanScrollRange.contains(mScrollLength)) {
-                invalidate();
-                mInvalidated = false;
-            } else {
-                mScrollLength = (Float) mCanScrollRange.clamp(mScrollLength);
-                if (!mInvalidated) {
-                    mInvalidated = true;
+                int newLineNum = (mLinePoints.get(mSingleClickedXIndex).lineNum + (int) scrollPointYDistance);
+
+                if (newLineNum >= mCoordTexts.length || newLineNum < 0 || mSingleClickedYIndex == newLineNum) {
+
+                } else {
+
+                    hasNewClicked = true;
+
+                    mSingleClickedYIndex = newLineNum;
+
+                    scrollPointStartY = e2.getY();
+
                     invalidate();
+
+                }
+
+            } else {
+                mScrollLength += (-distanceX);
+
+                if (mCanScrollRange.contains(mScrollLength)) {
+                    invalidate();
+                    mInvalidated = false;
+                } else {
+                    mScrollLength = (Float) mCanScrollRange.clamp(mScrollLength);
+                    if (!mInvalidated) {
+                        mInvalidated = true;
+                        invalidate();
+                    }
                 }
             }
 
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
+
+
+        @Override
+        public boolean onDown(@NonNull MotionEvent e) {
+
+            if ((mSingleClickedXIndex = findClickXIndex(e.getX())) != -1 && mLinePoints.get(mSingleClickedXIndex).isDashPath) {
+                canScroll = true;
+                scrollPointStartY = e.getY();
+            } else {
+                canScroll = false;
+            }
+            return false;
+
+        }
+
     });
 
-    private int findClickXIndex() {
+    private int findClickXIndex(float clickX) {
         int skip = mScale == 1 ? 2 : 1;
         for (int i = 0; i < mLines.size(); i += skip) {
             Rect lineRect = mLines.get(i).rect;
-            if (lineRect.contains((int) (mSingleClickedX + Math.abs(mScrollLength)), 0)) {
+            if (lineRect.contains((int) (clickX + Math.abs(mScrollLength)), 0)) {
                 return i;
             }
         }
         return -1;
     }
 
-    private int findClickYIndex() {
+    private int findClickYIndex(float clickY) {
         for (int i = 0; i < mYCoord.size(); i++) {
             Rect coordRect = mYCoord.get(i).rect;
-            if (coordRect.contains(0, (int) mSingleClickedY)) {
+            if (coordRect.contains(0, (int) clickY)) {
                 return i;
             }
         }
@@ -537,9 +779,40 @@ public class HolyGrailBrokeLine extends View {
 
         mGestureDetector.onTouchEvent(event);
 
+        switch (event.getActionMasked()) {
+
+            case MotionEvent.ACTION_UP: {
+                canScroll = false;
+                break;
+            }
+
+        }
+
         getParent().requestDisallowInterceptTouchEvent(true);
 
         return true;
+    }
+
+    private PointClickListener mListener;
+
+    public void setListener(PointClickListener mListener) {
+        this.mListener = mListener;
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        mListener = null;
+
+    }
+
+    public static interface PointClickListener {
+
+        void onChoosePoint(LinePoint point);
+
+        void onNothingPointChecked();
+
     }
 
 }

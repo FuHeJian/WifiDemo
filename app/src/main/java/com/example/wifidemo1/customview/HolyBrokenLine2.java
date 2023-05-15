@@ -102,9 +102,17 @@ public class HolyBrokenLine2 extends View {
 
                 if (mCurrentTapDown != null) {//由于触摸到点，则根据点开始滑动，点移出画布后，画布也跟着移动
 
+                    if (mCurrentTapDown.line.rect.right > (mCanvasStartX + mCanvasWidth)) {
+                        mMoveAbsLength = mCurrentTapDown.line.rect.right - mCanvasWidth;
+                    } else if (mCurrentTapDown.line.rect.left < mCanvasStartX) {
+                        mMoveAbsLength = mCurrentTapDown.line.rect.left;
+                    }
+                    invalidate();
 
                 } else {//移动画布
-                    mMoveLength += distanceY;
+
+                    mMoveLength = mMoveAbsLength - distanceY;
+
                     mMoveAbsLength = Math.abs(mMoveLength);
 
                     MyLine myLine = mLines.get(mLines.size() - 1);
@@ -116,6 +124,9 @@ public class HolyBrokenLine2 extends View {
                         mMoveLength = 0;
                         mMoveAbsLength = 0;
                     }
+
+                    invalidate();
+
                 }
 
             } else {
@@ -220,23 +231,20 @@ public class HolyBrokenLine2 extends View {
     /**
      * 竖坐标距离 折线图的距离
      */
-    private float mTextCoordsMarginToCanvas = ViewUtils.dpToPx(getContext(),3);
+    private float mTextCoordsMarginToCanvas = ViewUtils.dpToPx(getContext(), 3);
 
     /**
-     *
      * MaxTextWidth文本最大宽度
-     *
      */
     private int mMaxTextWidth;
 
     /**
-     *
      * MaxTextHeight文本最大高度
-     *
      */
     private int mMaxTextHeight;
 
     private float mLinesMargin;
+
     public void init() {
 
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "cai978.ttf");
@@ -261,14 +269,14 @@ public class HolyBrokenLine2 extends View {
         mPaint.setAntiAlias(true);
 
 
-        setData(Duration.of(0,ChronoUnit.MINUTES),new ArrayList<>());
+        setData(Duration.of(0, ChronoUnit.MINUTES), new ArrayList<>());
 
     }
 
     private float mCanvasStartX;
     private float mCanvasWidth;
 
-    private float mLineWidth = ViewUtils.dpToPx(getContext(),2);
+    private float mLineWidth = ViewUtils.dpToPx(getContext(), 2);
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -299,9 +307,9 @@ public class HolyBrokenLine2 extends View {
 
             float startX = i * mLinesMargin;
 
-            float startY = mMaxTextHeight/2f;
+            float startY = mMaxTextHeight / 2f;
 
-            canvas.drawLine(startX,startY,startX,getHeight() - startY,mPaint);
+            canvas.drawLine(startX, startY, startX, getHeight() - startY, mPaint);
 
         }
 

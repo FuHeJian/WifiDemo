@@ -13,7 +13,6 @@ import com.example.wifidemo1.customview.IndicatorMediator;
 import com.example.wifidemo1.databinding.ActivityMainBinding;
 import com.example.wifidemo1.fragment.CameraFragment;
 import com.example.wifidemo1.fragment.HomeFragment;
-import com.example.wifidemo1.fragment.TestFragment;
 
 /**
  * @author: fuhejian
@@ -50,7 +49,6 @@ public class HomeActivityInitViewImpl implements InitView<ActivityMainBinding> {
             //添加fragment
             adapter.addFragment(new HomeFragment());
             adapter.addFragment(new CameraFragment());
-            adapter.addFragment(new TestFragment());
             //设置一屏多页
             ((RecyclerView) viewPager2.getChildAt(0)).setPadding(0,0,300,0);
             ((RecyclerView) viewPager2.getChildAt(0)).setClipToPadding(false);

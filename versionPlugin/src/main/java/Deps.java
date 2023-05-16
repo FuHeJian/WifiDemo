@@ -1,12 +1,3 @@
-import com.android.build.gradle.AndroidConfig;
-import com.android.build.gradle.AppExtension;
-import com.android.build.gradle.BaseExtension;
-import com.android.build.gradle.internal.TaskManager;
-import com.android.build.gradle.internal.dependency.JetifyTransform;
-import com.android.build.gradle.internal.publishing.AndroidArtifacts;
-
-import plugin.*;
-
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
@@ -18,9 +9,9 @@ public class Deps implements Plugin<Project> {
     @Override
     public void apply(Project project) {
 
-        AppExtension byType = (AppExtension)project.getExtensions().getByName("android");
+/*        AppExtension byType = (AppExtension)project.getExtensions().getByName("android");
 
-        byType.registerTransform(new TestTransform(project));
+        byType.registerTransform(new TestTransform(project));*/
 
 /*        project.getDependencies().registerTransform(TransformTest.class, it -> {
             it.getFrom().attribute(AndroidArtifacts.ARTIFACT_TYPE, AndroidArtifacts.ArtifactType.CLASSES.getType());

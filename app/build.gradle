@@ -142,6 +142,9 @@ dependencies {
     //EXOPLAYER 用于ijkPlayer
     implementation 'com.google.android.exoplayer:exoplayer:r1.5.15'
 
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
     //字节layoutInspector
     implementation "com.bytedance.tools.codelocator:codelocator-core:2.0.0"
 

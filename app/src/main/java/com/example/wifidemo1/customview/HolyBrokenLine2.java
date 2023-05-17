@@ -24,6 +24,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * @author: fuhejian
@@ -114,7 +119,7 @@ public class HolyBrokenLine2 extends View {
     /**
      * 水平移动点时，每移动一个横向坐标坐标值所需的像素距离
      * <p>
-     * 值为{@link #mHorizontalMoveNormalPerDistance} ，{@link #mHorizontalMoveFastPerDistance} 其中之一
+     * 值为{@link #mHorizontalMoveNormalPerDistance}
      * </p>
      */
     private float mHorizontalMovePerDistance;
@@ -123,11 +128,6 @@ public class HolyBrokenLine2 extends View {
      * 正常移动时，所需的距离
      */
     private float mHorizontalMoveNormalPerDistance;
-
-    /**
-     * 快速移动时，所需的距离
-     */
-    private float mHorizontalMoveFastPerDistance;
 
     private GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
@@ -185,11 +185,12 @@ public class HolyBrokenLine2 extends View {
 
                 if (mCurrentTapDown != null) {//由于触摸到点，则根据点开始滑动，点移出画布后，画布也跟着移动，可以水平竖直移动点
 
-                    int orientation = distanceX < 0 ? 1 : -1;//移动方向，1表示向右滑动
+                    int orientation = distanceX < 0 ? -1 : 1;//移动方向，-1表示向右滑动点
                     if (lastOrientation != orientation) {//恢复正常速度
-                        mHorizontalMovePerDistance = mHorizontalMoveNormalPerDistance;
+                        if(autoScrollWork!=null && !autoScrollWork.isDisposed()){
+                            autoScrollWork.dispose();
+                        }
                     }
-                    lastOrientation = orientation;
 
                     mMovePointDistanceX += distanceX;
 
@@ -217,15 +218,21 @@ public class HolyBrokenLine2 extends View {
 //                        sortPoints();
                     }
 
-                    if (mCurrentTapDown.line.rect.right >= (mCanvasStartX + mCanvasWidth + mMoveAbsLength)) {
+                    if (mCurrentTapDown.line.rect.right >= (mCanvasStartX + mCanvasWidth + mMoveAbsLength) && orientation == -1) {
                         mMoveAbsLength = mCurrentTapDown.line.rect.right - mCanvasWidth - mCanvasStartX;
-                        mHorizontalMovePerDistance = mHorizontalMoveFastPerDistance; //点移动到边界时加快移动速度
-                    } else if (mCurrentTapDown.line.rect.left <= (mCanvasStartX + mMoveAbsLength)) {
+                        if((autoScrollWork == null || autoScrollWork.isDisposed()) && lastOrientation == orientation){
+                            autoScroll();
+                        }
+                    } else if (mCurrentTapDown.line.rect.left <= (mCanvasStartX + mMoveAbsLength) && orientation == 1) {
                         mMoveAbsLength = mCurrentTapDown.line.rect.left - mCanvasStartX;
-                        mHorizontalMovePerDistance = mHorizontalMoveFastPerDistance;//点移动到边界时加快移动速度
+
+                        if((autoScrollWork == null || autoScrollWork.isDisposed()) && lastOrientation == orientation){
+                            autoScroll();
+                        }
+
                     }
 
-                    System.out.println(mHorizontalMovePerDistance == mHorizontalMoveNormalPerDistance);
+                    lastOrientation = orientation;
 
                 } else {
 
@@ -263,7 +270,27 @@ public class HolyBrokenLine2 extends View {
         }
 
 
+        private Disposable autoScrollWork;
+
+        private void autoScroll() {
+
+            if (autoScrollWork == null || autoScrollWork.isDisposed()) {
+                autoScrollWork = AndroidSchedulers.mainThread().schedulePeriodicallyDirect(new Runnable() {
+                    @Override
+                    public void run() {
+                        onScroll(null, null, lastOrientation * mHorizontalMoveNormalPerDistance, 0);
+                    }
+                }, 0, 200, TimeUnit.MILLISECONDS);
+
+                mAutoScrollWork = autoScrollWork;
+
+            }
+
+        }
+
     });
+
+    private Disposable mAutoScrollWork;
 
     /**
      * 水平移动距离 range
@@ -760,9 +787,9 @@ public class HolyBrokenLine2 extends View {
 
         drawLines(canvas);
 
-        drawPoint(canvas);
-
         drawPointLine(canvas);
+
+        drawPoint(canvas);
 
         //平移会改变坐标的位置,恢复坐标位置
         canvas.restore();
@@ -813,12 +840,9 @@ public class HolyBrokenLine2 extends View {
 
         }
 
-        mHorizontalMovePerDistance = mLinesMargin / 2f;
+        mHorizontalMoveNormalPerDistance = mLinesMargin / 1.2f;
 
-        mHorizontalMoveNormalPerDistance = mLinesMargin / 2f;
-
-        mHorizontalMoveFastPerDistance = mHorizontalMoveNormalPerDistance / 4;
-
+        mHorizontalMovePerDistance = mHorizontalMoveNormalPerDistance;
     }
 
     private String[] mYCoordsText = {
@@ -945,7 +969,7 @@ public class HolyBrokenLine2 extends View {
     /**
      * 点间线段的宽度
      */
-    private float mPointLineWidth = ViewUtils.dpToPx(getContext(), 2);
+    private float mPointLineWidth = ViewUtils.dpToPx(getContext(), 4);
 
     /**
      * 绘制点之间的线
@@ -954,50 +978,48 @@ public class HolyBrokenLine2 extends View {
      */
     private void drawPointLine(Canvas canvas) {
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(mPointLineWidth);
-        for (int i = 0; i < mPoints.size(); i++) {
+        mPaint.setStrokeWidth(mSelectedPointRadius);
+        mPaint.setColor(mPointLineColor);
+        float lastSX = -1;
+        float lastSY = -1;
+        MyPoint lastPoint = null;
+        for (int i = 0; i < mLines.size(); i++) {
 
-            MyPoint point = mPoints.get(i);
-
-            float sx = (point.line.rect.left + point.line.rect.right) / 2f;
-
-            float sy = (point.yCoord.rect.left + point.yCoord.rect.right) / 2f;
-
-            i++;
-
-            if (i >= mPoints.size()) break;
-
-            point = mPoints.get(i);
-
+            MyPoint point = mLines.get(i).points;
+            if (point == null) continue;
+            lastPoint = point;
             float ex = (point.line.rect.left + point.line.rect.right) / 2f;
 
-            float ey = (point.yCoord.rect.left + point.yCoord.rect.right) / 2f;
+            float ey = (point.yCoord.rect.top + point.yCoord.rect.bottom) / 2f;
 
-            canvas.drawLine(sx, sy, ex, ey, mPaint);
+            if (lastSX == -1 || lastSY == -1) {
+                lastSX = ex;
+                lastSY = ey;
+            } else {
+                canvas.drawLine(lastSX, lastSY, ex, ey, mPaint);
+                lastSX = ex;
+                lastSY = ey;
+            }
 
         }
 
         //判断最后一个点是否在最后一条线上
 
-        if (mPoints.size() > 0) {
+        if (lastPoint == null) return;
 
-            MyPoint lastPoint = mPoints.get(mPoints.size() - 1);
+        if (lastPoint.line.index == mLines.size() - 1) {//在最后一条线
 
-            if (lastPoint.line.index == mLines.size()) {//在最后一条线
+        } else {//不在最后一条线，则由最后一点延申到最后一条线处
 
-            } else {//不在最后一条线，则由最后一点延申到最后一条线处
+            float sx = (lastPoint.line.rect.left + lastPoint.line.rect.right) / 2f;
 
-                float sx = (lastPoint.line.rect.left + lastPoint.line.rect.right) / 2f;
+            float sy = (lastPoint.yCoord.rect.top + lastPoint.yCoord.rect.bottom) / 2f;
 
-                float sy = (lastPoint.yCoord.rect.left + lastPoint.yCoord.rect.right) / 2f;
+            MyLine lastLine = mLines.get(mLines.size() - 1);
 
-                MyLine lastLine = mLines.get(mLines.size() - 1);
+            float ex = (lastLine.rect.left + lastLine.rect.right) / 2f;
 
-                float ex = (lastLine.rect.left + lastLine.rect.right) / 2f;
-
-                canvas.drawLine(sx, sy, ex, sy, mPaint);
-
-            }
+            canvas.drawLine(sx, sy, ex, sy, mPaint);
 
         }
 
@@ -1036,6 +1058,11 @@ public class HolyBrokenLine2 extends View {
                     mCurrentTapDown.line.points = mCurrentTapDown;
                 }
                 mCurrentTapDown = null;
+
+                if(mAutoScrollWork!=null && !mAutoScrollWork.isDisposed()){
+                    mAutoScrollWork.dispose();
+                }
+
                 invalidate();
                 break;
             }

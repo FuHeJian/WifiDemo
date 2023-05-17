@@ -10,15 +10,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.ViewDataBinding;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.wifidemo1.R;
-import com.example.wifidemo1.databinding.DialogHolyGrailIsoBinding;
 
 import java.util.ArrayList;
 
@@ -116,36 +111,6 @@ public class DragDropDataBindingAdapter extends RecyclerView.Adapter<DragDropDat
         @Override
         public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 outRect.right = gap;
-        }
-    }
-
-
-    public static class Adapter extends  BaseDataBindingAdapter<Integer>{
-
-
-        public Adapter(@NonNull DiffUtil.ItemCallback<Integer> diffCallback, @NonNull LifecycleOwner lifecycleOwner) {
-            super(diffCallback, lifecycleOwner);
-        }
-
-        @Override
-        public void onBindItem(ViewDataBinding binding, Integer item, int position) {
-            ((DialogHolyGrailIsoBinding)binding).isoButtonTitle.setText(String.valueOf(position));
-        }
-
-        @Override
-        public int getLayoutId(int position) {
-            /*switch (position+1){
-                case 1:{
-                    return R.layout.dialog_holy_grail_iso;
-                }
-                case 2:{
-                    return R.layout.dialog_holy_grail_f;
-                }
-                case 3:{
-                    return R.layout.dialog_holy_grail_s;
-                }
-            }*/
-            return R.layout.dialog_holy_grail_iso;
         }
     }
 

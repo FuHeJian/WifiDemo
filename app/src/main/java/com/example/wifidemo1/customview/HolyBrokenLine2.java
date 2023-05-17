@@ -96,10 +96,38 @@ public class HolyBrokenLine2 extends View {
      */
     private MyPoint mCurrentTapDown;
 
+    private MyPoint mLastCurrentTapDown;
+
     private boolean mCanScrollHorizon;
     private boolean mIsOnScale;
 
     private boolean isNeedRemovePoint = false;
+
+    private float mMovePointDistanceX;
+    private float mMovePointDistanceY;
+
+    /**
+     * 上下移动点时，每移动一个竖直坐标坐标值所需的像素距离
+     */
+    private float mVerticalMovePerDistance;
+
+    /**
+     * 水平移动点时，每移动一个横向坐标坐标值所需的像素距离
+     * <p>
+     * 值为{@link #mHorizontalMoveNormalPerDistance} ，{@link #mHorizontalMoveFastPerDistance} 其中之一
+     * </p>
+     */
+    private float mHorizontalMovePerDistance;
+
+    /**
+     * 正常移动时，所需的距离
+     */
+    private float mHorizontalMoveNormalPerDistance;
+
+    /**
+     * 快速移动时，所需的距离
+     */
+    private float mHorizontalMoveFastPerDistance;
 
     private GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
@@ -109,12 +137,20 @@ public class HolyBrokenLine2 extends View {
 
             if (mCurrentTapDown != null) {
                 mCurrentTapDown.isChoose = true;
+                //重新确定点的和横坐标
+                findAndUpdateSingleTapPosition((int) (mMoveAbsLength + e.getX()), (int) e.getY(), true, false);
             } else {
-                MyPoint point = findAndUpdateSingleTapPosition((int) (mMoveAbsLength + e.getX()), (int) e.getY(), true);
+                MyPoint point = findAndUpdateSingleTapPosition((int) (mMoveAbsLength + e.getX()), (int) e.getY(), true, true);
                 if (point != null) {
                     point.isChoose = true;
+                    if (mLastCurrentTapDown != null) {
+                        mLastCurrentTapDown.isChoose = false;
+                    }
+                    mLastCurrentTapDown = point;
                 }
             }
+
+            invalidate();
 
             return super.onSingleTapUp(e);
         }
@@ -122,9 +158,12 @@ public class HolyBrokenLine2 extends View {
         @Override
         public boolean onDown(MotionEvent e) {
 
-            mCurrentTapDown = findPoint((int) (mMoveAbsLength + e.getX()), (int) e.getY());
+            if (mLastCurrentTapDown != null) mLastCurrentTapDown.isChoose = false;
 
-            if (mCurrentTapDown != null) {//触摸到点
+            mCurrentTapDown = findPoint((int) (mMoveAbsLength + e.getX()), (int) e.getY());
+            mLastCurrentTapDown = mCurrentTapDown;
+            if (mCurrentTapDown != null) {//触摸到点,则可以水平竖直移动点
+                mCurrentTapDown.isChoose = true;
                 getParent().requestDisallowInterceptTouchEvent(true);
                 mCanScrollHorizon = true;
             }
@@ -132,55 +171,96 @@ public class HolyBrokenLine2 extends View {
             return super.onDown(e);
         }
 
+        private int lastOrientation;
+
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
-            if (Math.abs(distanceX) > Math.abs(distanceY) || mCanScrollHorizon) {
+//             || mCanScrollHorizon
+            if (Math.abs(distanceX) >= Math.abs(distanceY)) {//水平移动
                 mCanScrollHorizon = true;
 
                 //表示后续事件到UP事件不要拦截
                 getParent().requestDisallowInterceptTouchEvent(true);
 
-                if (mCurrentTapDown != null) {//由于触摸到点，则根据点开始滑动，点移出画布后，画布也跟着移动
+                if (mCurrentTapDown != null) {//由于触摸到点，则根据点开始滑动，点移出画布后，画布也跟着移动，可以水平竖直移动点
 
-                    int lines = (int) (distanceX / mLinesMargin);
+                    int orientation = distanceX < 0 ? 1 : -1;//移动方向，1表示向右滑动
+                    if (lastOrientation != orientation) {//恢复正常速度
+                        mHorizontalMovePerDistance = mHorizontalMoveNormalPerDistance;
+                    }
+                    lastOrientation = orientation;
+
+                    mMovePointDistanceX += distanceX;
+
+                    int lines = (int) (mMovePointDistanceX / mHorizontalMovePerDistance);
+                    System.out.println(lines);
                     mCurrentTapDown.isChoose = true;
                     int newIndex = mCurrentTapDown.line.index - lines;
-                    if (newIndex > 0 && newIndex < mLines.size()) {
-                        mCurrentTapDown.line = mLines.get(newIndex);
-                        if(mCurrentTapDown.line.points!=null){
+                    if (lines != 0 && newIndex >= 0 && newIndex < mLines.size()) {
+                        mMovePointDistanceX = mMovePointDistanceX % mHorizontalMovePerDistance;
+                        if (mCurrentTapDown.line.movePoint != null) {
+                            mCurrentTapDown.line.points = mCurrentTapDown.line.movePoint;//恢复移动过的点
+                        } else {
+                            mCurrentTapDown.line.points = null;
+                        }
+                        mCurrentTapDown.line = mLines.get(newIndex);//下一条线
+                        if (mCurrentTapDown.line.points != null) {
+                            mCurrentTapDown.line.movePoint = mCurrentTapDown.line.points;
                             isNeedRemovePoint = true;
-                        }else {
+                        } else {
                             isNeedRemovePoint = false;
                         }
-                        sortPoints();
+
+                        mCurrentTapDown.line.points = mCurrentTapDown;//下一跳线的点置为当前点
+
+//                        sortPoints();
                     }
 
-                    if (mCurrentTapDown.line.rect.right > (mCanvasStartX + mCanvasWidth + mMoveAbsLength)) {
+                    if (mCurrentTapDown.line.rect.right >= (mCanvasStartX + mCanvasWidth + mMoveAbsLength)) {
                         mMoveAbsLength = mCurrentTapDown.line.rect.right - mCanvasWidth - mCanvasStartX;
-                    } else if (mCurrentTapDown.line.rect.left < (mCanvasStartX + mMoveAbsLength)) {
+                        mHorizontalMovePerDistance = mHorizontalMoveFastPerDistance; //点移动到边界时加快移动速度
+                    } else if (mCurrentTapDown.line.rect.left <= (mCanvasStartX + mMoveAbsLength)) {
                         mMoveAbsLength = mCurrentTapDown.line.rect.left - mCanvasStartX;
+                        mHorizontalMovePerDistance = mHorizontalMoveFastPerDistance;//点移动到边界时加快移动速度
                     }
 
-                    invalidate();
+                    System.out.println(mHorizontalMovePerDistance == mHorizontalMoveNormalPerDistance);
 
-                } else {//移动画布
+                } else {
 
                     mMoveLength = mMoveAbsLength + distanceX;
                     mMoveAbsLength = Math.abs(mMoveLength);
-
-                    invalidate();
 
                 }
 
             } else {
 
-                mCanScrollHorizon = false;
+                if (mCurrentTapDown != null) {//竖直移动点
+                    getParent().requestDisallowInterceptTouchEvent(true);
+
+                    mMovePointDistanceY += distanceY;
+
+                    int dYcoords = (int) (mMovePointDistanceY / mVerticalMovePerDistance);
+
+                    int newYcoords = mCurrentTapDown.yCoord.index - dYcoords;
+
+                    if (dYcoords != 0 && newYcoords >= 0 && newYcoords < mYCoords.size()) {
+                        mMovePointDistanceY = mMovePointDistanceY % mVerticalMovePerDistance;
+                        mCurrentTapDown.yCoord = mYCoords.get(newYcoords);
+                    }
+
+                } else {//嵌套scrollView时，使scrollView执行竖直滑动
+                    getParent().requestDisallowInterceptTouchEvent(false);
+
+
+                }
 
             }
+
+            invalidate();
             return true;
         }
-
 
 
     });
@@ -188,9 +268,14 @@ public class HolyBrokenLine2 extends View {
     /**
      * 水平移动距离 range
      */
-    private float mMoveAbsLength;//mMoveLength的绝对值
+    private float mMoveAbsLength;
 
-    private float mMoveLength;//mMoveLength
+    /**
+     * 只用于，当mMoveLength小于0时，滑到了最右端时，重置为0
+     * <p>
+     * 和mMoveAbsLength没有必然联系
+     */
+    private float mMoveLength;
 
     /**
      * 寻找已经存在的点
@@ -200,7 +285,7 @@ public class HolyBrokenLine2 extends View {
      * @return
      */
     private MyPoint findPoint(int x, int y) {
-        return findAndUpdateSingleTapPosition(x, y, false);
+        return findAndUpdateSingleTapPosition(x, y, false, false);
     }
 
     /**
@@ -208,10 +293,11 @@ public class HolyBrokenLine2 extends View {
      *
      * @param x
      * @param y
-     * @param add 没有找到是否新增点
+     * @param reset 若线上有点，是否将此点的竖坐标置为触摸的位置
+     * @param add   没有找到是否新增点
      * @return 返回找到的点或者新增的点，如果点击范围不匹配则返回null
      */
-    private MyPoint findAndUpdateSingleTapPosition(int x, int y, boolean add) {
+    private MyPoint findAndUpdateSingleTapPosition(int x, int y, boolean reset, boolean add) {
 
         MyLine foundLine = null;
         //确定 x 属于哪条线
@@ -221,6 +307,7 @@ public class HolyBrokenLine2 extends View {
 
             if (line.rect.contains((int) x, (int) y)) {
                 foundLine = line;
+                break;
             }
 
         }
@@ -234,8 +321,9 @@ public class HolyBrokenLine2 extends View {
         MyYCoords foundYCoord = null;
         for (int i = 0; i < mYCoords.size(); i++) {
             MyYCoords yCoords = mYCoords.get(i);
-            if (yCoords.rect.contains((int) x, (int) y)) {
+            if (yCoords.rect.contains((int) (x - mMoveAbsLength), (int) y)) {
                 foundYCoord = yCoords;
+                break;
             }
         }
 
@@ -244,7 +332,10 @@ public class HolyBrokenLine2 extends View {
         }
 
         MyPoint point = foundLine.points;
-        if (point.yCoord == foundYCoord) {
+        if (point != null) {
+            if (reset) {
+                point.yCoord = foundYCoord;
+            }
             return point;
         }
 
@@ -285,7 +376,27 @@ public class HolyBrokenLine2 extends View {
 
     private Duration mStartTime = Duration.of(0, ChronoUnit.MINUTES);
 
-    public void setData(Duration startTime, ArrayList<MyPoint> points) {
+    /**
+     * 设置失效的时间
+     *
+     * @param invalidateMinutes
+     */
+    public void setInvalidateMinutes(int invalidateMinutes) {
+        this.mInvalidateMinutes = invalidateMinutes;
+    }
+
+    /**
+     * 从起始时间开始计算，无效（已走过）的分钟数
+     */
+    private int mInvalidateMinutes = 0;
+
+
+    /**
+     * 设置起始时间
+     *
+     * @param startTime
+     */
+    public void setStartTime(Duration startTime) {
 
         mStartTime = startTime;
 
@@ -299,18 +410,46 @@ public class HolyBrokenLine2 extends View {
 
         mLines.clear();
 
+        Duration _startTime;
+
+        _startTime = Duration.of(30 * (mStartTime.toMinutes() / 30), ChronoUnit.MINUTES);
+
         for (int i = 0; i < mLinesNum; i++) {
 
             MyLine myLine = new MyLine();
             myLine.index = i;
 
+            if (i == 0) {
+                myLine.duration = mStartTime;
+            } else {
+                myLine.duration = _startTime.plus(30L * i, ChronoUnit.MINUTES);
+            }
+
             mLines.add(myLine);
 
         }
 
-        mPoints.clear();
+        invalidate();
 
-        if (mPoints != null) {
+    }
+
+
+    /**
+     * 设置点
+     *
+     * @param points
+     */
+    public void setPoints(ArrayList<MyPoint> points) {
+
+        if (points != null) {
+            mPoints.clear();
+            for (int i = 0; i < points.size(); i++) {
+                MyPoint _addPoint = points.get(i);
+                if (_addPoint.line != null && _addPoint.yCoord != null) {
+                    _addPoint.line.points = _addPoint;//画点时是从line中获取的点进行绘制的，而不是从mPoints
+                    mPoints.add(_addPoint);
+                }
+            }
             mPoints = points;
         }
 
@@ -318,16 +457,87 @@ public class HolyBrokenLine2 extends View {
 
     }
 
+    public ArrayList<MyPoint> getPoints() {
+        ArrayList<MyPoint> points = new ArrayList<>();
+        for (int i = 0; i < mLines.size(); i++) {
+            MyPoint point = mLines.get(i).points;
+            if (point != null) {
+                points.add(point);
+            }
+        }
+        return points;
+    }
+
+    /**
+     * @param time 距离第一个点的时间
+     * @return
+     */
+    public MyLine getAndFindLine(int time) {
+
+        if (mLines.size() != 0) {
+            long _startTime = 0;
+
+            _startTime = 30 * (mStartTime.toMinutes() / 30);
+
+            long newTime = mStartTime.toMinutes() + time;
+            if (newTime % 30 == 0) {
+
+                long index = newTime / 30 - _startTime / 30;
+
+                if (index > 0 && index < mLines.size()) {
+                    return mLines.get((int) index);
+                } else {
+                    return null;
+                }
+
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+    }
+
+    /**
+     * 寻找纵坐标
+     *
+     * @param value 纵坐标值
+     * @return
+     */
+    public MyYCoords getAndFindYCoords(float value) {
+        for (int i = 0; i < mYCoords.size(); i++) {
+            if (mYCoords.get(i).value == value) {
+                return mYCoords.get(i);
+            }
+        }
+        return null;
+    }
+
     private int mLinesNum = 48;
 
     private ArrayList<MyPoint> mPoints = new ArrayList<>();
 
     public class MyPoint {
-        MyLine line;
+        /**
+         * 点所在的横坐标
+         */
+        public MyLine line;
 
-        MyYCoords yCoord;
+        /**
+         * 点所在的纵坐标
+         */
+        public MyYCoords yCoord;
 
-        boolean isChoose = false;
+        /**
+         * 点是否可以删除
+         */
+        public boolean canDelete = true;
+
+        /**
+         * 点是否被选择
+         */
+        public boolean isChoose = false;
 
     }
 
@@ -347,6 +557,8 @@ public class HolyBrokenLine2 extends View {
         String rawValue;
 
         float value;
+
+        int index = 0;
 
     }
 
@@ -369,6 +581,16 @@ public class HolyBrokenLine2 extends View {
          */
         int index;
 
+        /**
+         * 当前线表示的时间
+         */
+        Duration duration;
+
+        /**
+         * 需要恢复的点
+         */
+        MyPoint movePoint;
+
     }
 
     private Paint mPaint = new Paint();
@@ -379,7 +601,7 @@ public class HolyBrokenLine2 extends View {
     /**
      * 竖坐标距离 折线图的距离
      */
-    private float mTextCoordsMarginToCanvas = ViewUtils.dpToPx(getContext(), 10);
+    private float mTextCoordsMarginToCanvas = ViewUtils.dpToPx(getContext(), 6);
 
     /**
      * MaxTextWidth文本最大宽度
@@ -443,7 +665,9 @@ public class HolyBrokenLine2 extends View {
 
         mPaint.setAntiAlias(true);
 
-        setData(Duration.of(0, ChronoUnit.MINUTES), new ArrayList<>());
+        setStartTime(Duration.of(0, ChronoUnit.MINUTES));
+
+        setPoints(new ArrayList<>());
 
     }
 
@@ -486,7 +710,35 @@ public class HolyBrokenLine2 extends View {
 
     }
 
-    private float mEndVisibleCanvasX;
+    /**
+     * 线的颜色
+     */
+    private int mLineColor = Color.parseColor("#0FFFFFFF");
+
+    /**
+     * 坐标文本的颜色
+     */
+    private int mCoordsColor = Color.parseColor("#FFFFFFFF");
+
+    /**
+     * 未选中点的颜色
+     */
+    private int mUnSelectedPointColor = Color.parseColor("#FFFFFF00");
+
+    /**
+     * 选中点的颜色
+     */
+    private int mSelectedPointColor = Color.parseColor("#FF00FF00");
+
+    /**
+     * 未选中点的半径
+     */
+    private float mUnSelectedPointRadius = ViewUtils.dpToPx(getContext(), 4);
+
+    /**
+     * 选中的点的半径
+     */
+    private float mSelectedPointRadius = ViewUtils.dpToPx(getContext(), 8);
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -499,17 +751,20 @@ public class HolyBrokenLine2 extends View {
         canvas.save();
         restrictMoveLength();
 
-        canvas.clipRect(mCanvasStartX, mPaddingTop, mCanvasStartX + mCanvasWidth, getHeight() - mPaddingBottom);
+//        canvas.clipRect(mCanvasStartX, mPaddingTop, mCanvasStartX + mCanvasWidth, getHeight() - mPaddingBottom);
+
+        canvas.clipRect(mCanvasStartX, 0, mCanvasStartX + mCanvasWidth, getHeight());
 
         //只影响translate之后的动作，因为translate改变的是坐标轴，所以translate之前绘制的内容也不会随之改变，只是坐标轴变化了
         canvas.translate(-mMoveAbsLength, 0);//坐标轴向左平移mMoveAbsLength大小
 
-        mEndVisibleCanvasX = mCanvasStartX + mMoveAbsLength + mCanvasWidth;
-
         drawLines(canvas);
 
-        //平移会改变坐标的位置
+        drawPoint(canvas);
 
+        drawPointLine(canvas);
+
+        //平移会改变坐标的位置,恢复坐标位置
         canvas.restore();
 
     }
@@ -522,7 +777,7 @@ public class HolyBrokenLine2 extends View {
     private void drawLines(Canvas canvas) {
 
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.WHITE);
+        mPaint.setColor(mLineColor);
         mPaint.setStrokeWidth(mLineWidth);
         mPaint.setAlpha(190);
 
@@ -546,7 +801,23 @@ public class HolyBrokenLine2 extends View {
 
             canvas.drawLine(startX, startY, startX, endY, mPaint);
 
+            //绘制横坐标
+            if (i != 0 && i % 2 == 0) {
+                String drawValue = String.valueOf(i / 2);
+                Rect _rect = new Rect();
+                mTextPaint.getTextBounds(drawValue, 0, drawValue.length(), _rect);
+                int tW = _rect.width();
+                int tH = _rect.height();
+                canvas.drawText(drawValue, startX - tW / 2, endY + tH + mTextCoordsMarginToCanvas, mTextPaint);
+            }
+
         }
+
+        mHorizontalMovePerDistance = mLinesMargin / 2f;
+
+        mHorizontalMoveNormalPerDistance = mLinesMargin / 2f;
+
+        mHorizontalMoveFastPerDistance = mHorizontalMoveNormalPerDistance / 4;
 
     }
 
@@ -586,24 +857,33 @@ public class HolyBrokenLine2 extends View {
 
             float x = startX + mMaxTextWidth - textW;
 
+            mYCoords.get(i).index = i;
+
             Rect y_rect = mYCoords.get(i).rect;
             y_rect.top = (int) (y - textH - textMargin / 2);
-            if (y_rect.top < mPaddingTop) {
+/*            if (y_rect.top < mPaddingTop) {
                 y_rect.top = (int) mPaddingTop;
-            }
+            }*/
             y_rect.left = (int) mCanvasStartX;
 
             y_rect.right = (int) (mCanvasStartX + mCanvasWidth);
 
             y_rect.bottom = (int) (y + textMargin / 2);
 
-            if (y_rect.bottom > getHeight() - mPaddingBottom) {
+
+/*            if (y_rect.bottom > getHeight() - mPaddingBottom) {
                 y_rect.bottom = (int) (getHeight() - mPaddingBottom);
-            }
+            }*/
 
             canvas.drawText(value, x, y, mTextPaint);
 
         }
+
+        mSelectedPointRadius = textMargin;
+
+        mUnSelectedPointRadius = textMargin;
+
+        mVerticalMovePerDistance = textMargin + mMaxTextHeight;
 
     }
 
@@ -617,18 +897,109 @@ public class HolyBrokenLine2 extends View {
         if (mMoveAbsLength + mCanvasWidth + mCanvasStartX > endX) {
             mMoveAbsLength = endX - mCanvasWidth - mCanvasStartX;
         } else if (mMoveLength < 0 || mMoveAbsLength < 0) {
+            mMoveLength = 0;
             mMoveAbsLength = 0;
         }
 
     }
 
     /**
-     * =
      * 绘制点
      *
      * @param canvas
      */
     private void drawPoint(Canvas canvas) {
+
+        float pointRadius = 0;
+        mPaint.setStyle(Paint.Style.FILL);
+        for (int i = 0; i < mLines.size(); i++) {
+
+            MyPoint point = mLines.get(i).points;
+
+            if (point == null) continue;
+
+            float x = (point.line.rect.left + point.line.rect.right) / 2f;
+
+            float y = (point.yCoord.rect.top + point.yCoord.rect.bottom) / 2f;
+
+            if (point.isChoose) {
+                pointRadius = mSelectedPointRadius;
+                mPaint.setColor(mSelectedPointColor);
+            } else {
+                pointRadius = mUnSelectedPointRadius;
+                mPaint.setColor(mUnSelectedPointColor);
+            }
+
+            canvas.drawCircle(x, y, pointRadius, mPaint);
+
+        }
+
+    }
+
+
+    /**
+     * 点间线段的颜色
+     */
+    private int mPointLineColor = Color.parseColor("#9F00FF00");
+
+    /**
+     * 点间线段的宽度
+     */
+    private float mPointLineWidth = ViewUtils.dpToPx(getContext(), 2);
+
+    /**
+     * 绘制点之间的线
+     *
+     * @param canvas
+     */
+    private void drawPointLine(Canvas canvas) {
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(mPointLineWidth);
+        for (int i = 0; i < mPoints.size(); i++) {
+
+            MyPoint point = mPoints.get(i);
+
+            float sx = (point.line.rect.left + point.line.rect.right) / 2f;
+
+            float sy = (point.yCoord.rect.left + point.yCoord.rect.right) / 2f;
+
+            i++;
+
+            if (i >= mPoints.size()) break;
+
+            point = mPoints.get(i);
+
+            float ex = (point.line.rect.left + point.line.rect.right) / 2f;
+
+            float ey = (point.yCoord.rect.left + point.yCoord.rect.right) / 2f;
+
+            canvas.drawLine(sx, sy, ex, ey, mPaint);
+
+        }
+
+        //判断最后一个点是否在最后一条线上
+
+        if (mPoints.size() > 0) {
+
+            MyPoint lastPoint = mPoints.get(mPoints.size() - 1);
+
+            if (lastPoint.line.index == mLines.size()) {//在最后一条线
+
+            } else {//不在最后一条线，则由最后一点延申到最后一条线处
+
+                float sx = (lastPoint.line.rect.left + lastPoint.line.rect.right) / 2f;
+
+                float sy = (lastPoint.yCoord.rect.left + lastPoint.yCoord.rect.right) / 2f;
+
+                MyLine lastLine = mLines.get(mLines.size() - 1);
+
+                float ex = (lastLine.rect.left + lastLine.rect.right) / 2f;
+
+                canvas.drawLine(sx, sy, ex, sy, mPaint);
+
+            }
+
+        }
 
     }
 
@@ -652,12 +1023,20 @@ public class HolyBrokenLine2 extends View {
             case MotionEvent.ACTION_UP: {
                 mCanScrollHorizon = false;
                 mIsOnScale = false;
-                if(isNeedRemovePoint&&mCurrentTapDown!=null){//移动后的点占据了原先点的位置，在松手时更新为移动过来的点
+                mMovePointDistanceX = 0;
+                mMovePointDistanceY = 0;
+                if (isNeedRemovePoint && mCurrentTapDown != null) {//移动后的点占据了原先点的位置，在松手时更新为移动过来的点
                     isNeedRemovePoint = false;
-                    mPoints.remove(mCurrentTapDown.line.points);
+                    if (mCurrentTapDown != mCurrentTapDown.line.points) {
+                        mPoints.remove(mCurrentTapDown.line.points);
+                    }
+                }
+                if (mCurrentTapDown != null) {
+                    mCurrentTapDown.line.movePoint = null;
                     mCurrentTapDown.line.points = mCurrentTapDown;
                 }
                 mCurrentTapDown = null;
+                invalidate();
                 break;
             }
 

@@ -146,7 +146,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
     //字节layoutInspector
-    implementation "com.bytedance.tools.codelocator:codelocator-core:2.0.0"
+//    implementation "com.bytedance.tools.codelocator:codelocator-core:2.0.0"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

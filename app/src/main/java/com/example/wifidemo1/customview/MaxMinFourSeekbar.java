@@ -71,26 +71,32 @@ public class MaxMinFourSeekbar extends View {
         public float offsetX = 0;//相对于刻度线位置的x偏移
     }
 
-    /**
-     * 滑块的个数
-     */
-    private int mSlidersNum = 4;
-
     private ArrayList<Slider> sliders = new ArrayList<>();
-
-    public ArrayList<Slider> getSliders() {
-        return sliders;
-    }
 
     private float lineMargin = 0;
 
+    private float mPaddingTop;
+    private float mPaddingBottom;
+    private float mVisibleWidth;
+    private float mVisibleHeight;
+
+    private float midY;
+
     public void init() {
         //初始化slider
-        for (int i = 0; i < mSlidersNum; i++) {
+        for (int i = 0; i < 4; i++) {
             sliders.add(new Slider());
         }
         mPaint.setAntiAlias(true);
+
+        mPaddingTop = getPaddingTop();
+
+        mPaddingBottom = getPaddingBottom();
+
+        mVisibleWidth = getWidth();
+
     }
+
 
     public boolean isLayout = false;
 
@@ -99,7 +105,7 @@ public class MaxMinFourSeekbar extends View {
         super.onLayout(changed, left, top, right, bottom);
 
 
-/*        for (int i = 0; i < sliders.size(); i++) {
+/*     for (int i = 0; i < sliders.size(); i++) {
             Slider slider = sliders.get(i);
             Rect rect = slider.rect;
             rect.top = 0;
@@ -107,31 +113,26 @@ public class MaxMinFourSeekbar extends View {
             rect.right = getHeight() + i * getHeight();
             rect.left = rect.right - getHeight();
         }*/
+
+        mVisibleHeight = getHeight() - mPaddingTop - mPaddingBottom;
+
+        midY = mVisibleHeight / 2 + mPaddingTop;
+
         isLayout = true;
 
     }
 
     public void setSliderValue(int sliderIndex, int tickIndex) {
-        //更新位置
-        if (isLayout) {
-            if (tickIndex == -1 || sliderIndex >= sliders.size() || sliderIndex < 0 || tickIndex >= tickMarks.size())
-                return;
-            setSliderValue(sliderIndex, tickMarks.get(tickIndex));
-        } else {
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    if (tickIndex == -1 || sliderIndex >= sliders.size() || sliderIndex < 0 || tickIndex >= tickMarks.size())
-                        return;
-                    setSliderValue(sliderIndex, tickMarks.get(tickIndex));
-                }
-            });
-        }
 
+        if (tickIndex == -1 || sliderIndex >= sliders.size() || sliderIndex < 0 || tickIndex >= tickMarks.size())
+            return;
+
+        //更新位置
+        setSliderValue(sliderIndex, tickMarks.get(tickIndex));
 
     }
 
-    private void setSliderValue(int sliderIndex, TickMark tickMark) {
+    public void setSliderValue(int sliderIndex, TickMark tickMark) {
 
         if (tickMark == null || sliderIndex >= sliders.size() || sliderIndex < 0) return;
 
@@ -160,16 +161,16 @@ public class MaxMinFourSeekbar extends View {
         if (tickMark.rect == null) return;
 
         if (tickMark.currentSliders.size() == 0) {
-            tickMarkRect.left = (int) (tickMark.x + getHeight() / 2);
-            tickMarkRect.right = (int) (tickMark.x - getHeight() / 2);
+            tickMarkRect.left = (int) (tickMark.x + mVisibleHeight / 2);
+            tickMarkRect.right = (int) (tickMark.x - mVisibleHeight / 2);
         } else {
             for (int i = 0; i < tickMark.currentSliders.size(); i++) {
                 Slider slider1 = tickMark.currentSliders.get(i);
                 Rect sliderRect = slider1.rect;
 
                 if (i == 0) {
-                    sliderRect.right = (int) (tickMark.x + getHeight() / 2);
-                    sliderRect.left = (int) (tickMark.x - getHeight() / 2);
+                    sliderRect.right = (int) (tickMark.x + mVisibleHeight / 2);
+                    sliderRect.left = (int) (tickMark.x - mVisibleHeight / 2);
 
                     tickMarkRect.right = sliderRect.right;
                     tickMarkRect.left = sliderRect.left;
@@ -181,13 +182,13 @@ public class MaxMinFourSeekbar extends View {
                         sliderRect.right = tickMarkRect.left;
 
 
-                        sliderRect.left = tickMarkRect.left - getHeight();
+                        sliderRect.left = tickMarkRect.left - (int) mVisibleHeight;
 
                     } else {//右边
 
                         sliderRect.left = tickMarkRect.right;
 
-                        sliderRect.right = tickMarkRect.right + getHeight();
+                        sliderRect.right = tickMarkRect.right + (int) mVisibleHeight;
 
                     }
                 }
@@ -213,8 +214,8 @@ public class MaxMinFourSeekbar extends View {
         if (slider.rect == null) {
             //初始化 slider.rect
             Rect rect = new Rect();
-            rect.top = 0;
-            rect.bottom = getHeight();
+            rect.top = (int) mPaddingTop;
+            rect.bottom = (int) (getHeight() - mPaddingBottom);
             slider.rect = rect;
             slider.notInit = true;
         }
@@ -240,21 +241,21 @@ public class MaxMinFourSeekbar extends View {
                 if (sliderRect.left > tickMarkRect.left || slider.notInit) {//右边
 
                     sliderRect.left = tickMarkRect.right;
-                    sliderRect.right = tickMarkRect.right + getHeight();
+                    sliderRect.right = tickMarkRect.right + (int) mVisibleHeight;
 
                     if (sliderRect.right > getWidth()) {//超出范围改为左边
-                        sliderRect.left = tickMarkRect.left - getHeight();
+                        sliderRect.left = tickMarkRect.left - (int) mVisibleHeight;
                         sliderRect.right = tickMarkRect.left;
                     }
 
                 } else {//左边
 
-                    sliderRect.left = tickMarkRect.left - getHeight();
+                    sliderRect.left = tickMarkRect.left - (int) mVisibleHeight;
                     sliderRect.right = tickMarkRect.left;
 
                     if (sliderRect.left < 0) {//超出范围改为右边
                         sliderRect.left = tickMarkRect.right;
-                        sliderRect.right = tickMarkRect.right + getHeight();
+                        sliderRect.right = tickMarkRect.right + (int) mVisibleHeight;
                     }
 
                 }
@@ -298,6 +299,8 @@ public class MaxMinFourSeekbar extends View {
             for (int i = 0; i < dataList.size(); i++) {
                 if (dataList.get(i).value == value) {
                     return dataList.get(i).raw;
+                } else if (dataList.get(i).value > value) {
+                    return dataList.get(i).raw;
                 }
             }
         }
@@ -315,7 +318,7 @@ public class MaxMinFourSeekbar extends View {
         super.onDraw(canvas);
 
 //        lineMargin = dataList.size() == 1 ? 0 : (getWidth() - getHeight() * dataList.size()) / (dataList.size() - 1);
-        lineMargin = dataList.size() == 1 ? 0 : (getWidth() - getHeight()) / (dataList.size() - 1f);
+        lineMargin = dataList.size() == 1 ? 0 : (getWidth() - (int) mVisibleHeight) / (dataList.size() - 1f);
         if (dataChanged) {
             tickMarks.clear();
             for (int i = 0; i < dataList.size(); i++) {
@@ -331,13 +334,13 @@ public class MaxMinFourSeekbar extends View {
                 tickMark.rawValue = dataList.get(i).raw;
                 tickMark.index = i;
 
-//              tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
-                tickMark.x = 0.5f * getHeight() + i * lineMargin;
+//                tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
+                tickMark.x = 0.5f * (int) mVisibleHeight + i * lineMargin;
                 Rect rect = tickMark.rect;
-                rect.left = (int) (tickMark.x + 0.5f * getHeight());//就是加号
-                rect.right = (int) (tickMark.x - 0.5f * getHeight());//就是减号
-                rect.top = 0;
-                rect.bottom = getHeight();
+                rect.left = (int) (tickMark.x + 0.5f * (int) mVisibleHeight);//就是加号
+                rect.right = (int) (tickMark.x - 0.5f * (int) mVisibleHeight);//就是减号
+                rect.top = (int) mPaddingTop;
+                rect.bottom = (int) (getHeight() - mPaddingBottom);
 
                 tickMarks.add(tickMark);
                 dataChanged = false;
@@ -394,15 +397,15 @@ public class MaxMinFourSeekbar extends View {
         //绘制slider之间的颜色
 
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(getHeight());
+        mPaint.setStrokeWidth(mVisibleHeight);
         mPaint.setColor(Color.parseColor("#1C252F"));
-        canvas.drawLine(0, getHeight() / 2, getWidth(), getHeight() / 2, mPaint);
+        canvas.drawLine(0, midY, getWidth(), midY, mPaint);
 
         mPaint.setColor(color2);
 
         for (int i = 0, j = sliders.size() - 1; i < j; i++, j--) {
             if (sliders.get(i).rect != null) {
-                canvas.drawLine(sliders.get(i).rect.left + getHeight() / 2, getHeight() / 2, sliders.get(j).rect.left + getHeight() / 2, getHeight() / 2, mPaint);
+                canvas.drawLine(sliders.get(i).rect.left + mVisibleHeight / 2, midY, sliders.get(j).rect.left + mVisibleHeight / 2, midY, mPaint);
             }
             mPaint.setColor(color1);
         }
@@ -417,7 +420,7 @@ public class MaxMinFourSeekbar extends View {
             }
         }
 
-/*      mPaint.setTextSize(20);
+/*        mPaint.setTextSize(20);
         mPaint.setColor(Color.BLACK);
         for (int i = 0; i < tickMarks.size(); i++) {
             canvas.drawText(tickMarks.get(i).rawValue,tickMarks.get(i).x,getHeight()/2,mPaint);
@@ -450,18 +453,36 @@ public class MaxMinFourSeekbar extends View {
     private boolean mHasInitialDataList = false;
 
     public void setDataList(ArrayList<String> dataList) {
-        dataChanged = false;
         ArrayList<V> vList = new ArrayList<>();
         for (int i = 0; i < dataList.size(); i++) {
             V v = new V();
+            try {
 
-            if (dataList.get(i).contains("/")) {
-                v.value = (int) (Fraction.getFraction(dataList.get(i)).floatValue() * 1000000);
-            } else {
-                v.value = (int) (Float.parseFloat(dataList.get(i)) * 1000000);
+                String rS = dataList.get(i).toLowerCase();
+
+                int factor = 1000000;
+                if (rS.contains("s")) {
+                    factor = 1000000;
+                    rS = rS.replace("s", "");
+                } else if (dataList.get(i).toLowerCase().contains("m")) {
+                    rS = rS.replace("m", "");
+                    factor = 1000000 * 60;
+                } else if (dataList.get(i).toLowerCase().contains("h")) {
+                    rS = rS.replace("h", "");
+                    factor = 1000000 * 60 * 60;
+                }
+
+                if (rS.contains("/")) {
+                    v.value = (int) (Fraction.getFraction(rS).floatValue() * factor);
+                } else {
+                    v.value = (int) (Float.parseFloat(rS) * factor);
+                }
+
+                v.raw = dataList.get(i);
+                vList.add(v);
+            } catch (Exception e) {
+
             }
-            v.raw = dataList.get(i);
-            vList.add(v);
         }
 
         Collections.sort(vList, new Comparator<V>() {
@@ -481,6 +502,7 @@ public class MaxMinFourSeekbar extends View {
         this.dataList = vList;
 
 //        lineMargin = dataList.size() == 1 ? 0 : (getWidth() - getHeight() * vList.size()) / (vList.size() - 1f);
+        lineMargin = dataList.size() == 1 ? 0 : (getWidth() - (int) mVisibleHeight) / (vList.size() - 1f);
         tickMarks.clear();
 
         if (vList.size() != 0) {
@@ -488,48 +510,36 @@ public class MaxMinFourSeekbar extends View {
         } else {
             mHasInitialDataList = false;
         }
+        for (int i = 0; i < vList.size(); i++) {
+            //更新刻度线位置
+            TickMark tickMark = new TickMark();
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                lineMargin = dataList.size() == 1 ? 0 : (getWidth() - getHeight()) / (vList.size() - 1f);
-                for (int i = 0; i < vList.size(); i++) {
-                    //更新刻度线位置
-                    TickMark tickMark = new TickMark();
+            try {
+                tickMark.value = vList.get(i).value;
 
-                    try {
-                        tickMark.value = vList.get(i).value;
-
-                    } catch (Exception e) {
-                        tickMark.value = 0;
-                    }
-
-                    tickMark.rawValue = vList.get(i).raw;
-                    tickMark.index = i;
-
-//            tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
-//            tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
-                    tickMark.x = 0.5f * getHeight() + i * lineMargin;
-                    Rect rect = tickMark.rect;
-                    rect.left = (int) (tickMark.x + 0.5f * getHeight());
-                    rect.right = (int) (tickMark.x - 0.5f * getHeight());
-                    rect.top = 0;
-                    rect.bottom = getHeight();
-
-                    tickMarks.add(tickMark);
-                    dataChanged = false;
-                }
-
-                invalidate();
+            } catch (Exception e) {
+                tickMark.value = 0;
             }
-        };
 
-        if (isLayout) {
-            runnable.run();
-        } else {
-            post(runnable);
+            tickMark.rawValue = vList.get(i).raw;
+            tickMark.index = i;
+
+//            tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
+//            tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
+            tickMark.x = 0.5f * (int) mVisibleHeight + i * lineMargin;
+            Rect rect = tickMark.rect;
+            rect.left = (int) (tickMark.x + 0.5f * (int) mVisibleHeight);
+            rect.right = (int) (tickMark.x - 0.5f * (int) mVisibleHeight);
+            rect.top = (int) mPaddingTop;
+            rect.bottom = (int) (getHeight() - mPaddingBottom);
+
+            tickMarks.add(tickMark);
+            dataChanged = false;
         }
 
+        dataChanged = false;
+
+        invalidate();
     }
 
     public ArrayList<String> getSlidersAt() {
@@ -695,9 +705,17 @@ public class MaxMinFourSeekbar extends View {
         if (touchX == 0) return -1;
         for (int i = 0; i < sliders.size(); i++) {
             Rect rect = sliders.get(i).rect;
-            if (rect != null && rect.contains((int) touchX, 0)) {
-                mTouchId = i;
-                return i;
+            if (rect != null) {
+                if (rect.contains((int) touchX, (int) midY)) {
+                    mTouchId = i;
+                    return i;
+                } else if (rect.contains((int) touchX - (int) mVisibleHeight / 3, (int) midY)) {
+                    mTouchId = i;
+                    return i;
+                } else if (rect.contains((int) touchX + (int) mVisibleHeight / 3, (int) midY)) {
+                    mTouchId = i;
+                    return i;
+                }
             }
         }
         return -1;

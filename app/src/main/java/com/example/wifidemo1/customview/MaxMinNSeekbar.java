@@ -87,6 +87,7 @@ public class MaxMinNSeekbar extends View {
         for (int i = 0; i < 4; i++) {
             sliders.add(new Slider());
         }
+
         mPaint.setAntiAlias(true);
 
         mPaddingTop = getPaddingTop();
@@ -95,6 +96,21 @@ public class MaxMinNSeekbar extends View {
 
         mVisibleWidth = getWidth();
 
+    }
+
+    private int mSliderNum = 2;
+
+    public void setSliderNum(int num) {
+        if (num < 0) return;
+        mSliderNum = num;
+
+        sliders.clear();
+        //初始化slider
+        for (int i = 0; i < mSliderNum; i++) {
+            Slider slider = new Slider();
+            sliders.add(slider);
+        }
+        invalidate();
     }
 
 
@@ -119,6 +135,43 @@ public class MaxMinNSeekbar extends View {
         midY = mVisibleHeight / 2 + mPaddingTop;
 
         isLayout = true;
+
+        if (dataChanged) {
+            tickMarks.clear();
+            for (int i = 0; i < dataList.size(); i++) {
+                //更新刻度线位置
+                TickMark tickMark = new TickMark();
+
+                try {
+                    tickMark.value = dataList.get(i).value;
+                } catch (Exception e) {
+                    tickMark.value = 0;
+                }
+
+                tickMark.rawValue = dataList.get(i).raw;
+                tickMark.index = i;
+
+//                tickMark.x = (0.5f + i) * getHeight() + i * lineMargin;
+                tickMark.x = 0.5f * (int) mVisibleHeight + i * lineMargin;
+                Rect rect = tickMark.rect;
+                rect.left = (int) (tickMark.x + 0.5f * (int) mVisibleHeight);//就是加号
+                rect.right = (int) (tickMark.x - 0.5f * (int) mVisibleHeight);//就是减号
+                rect.top = (int) mPaddingTop;
+                rect.bottom = (int) (getHeight() - mPaddingBottom);
+
+                tickMarks.add(tickMark);
+                dataChanged = false;
+            }
+        }
+
+
+        for (int i = 0; i < sliders.size(); i++) {
+            if (sliders.get(i).tickMark == null) {
+                setSliderValue(i, i);
+            } else {
+                break;
+            }
+        }
 
     }
 
@@ -637,6 +690,53 @@ public class MaxMinNSeekbar extends View {
         }
 
         invalidate();
+
+    }
+
+
+    public void setSlidersValue(float... values) {
+
+        if (values.length > mSliderNum) return;
+        ArrayList<Float> arrayList = new ArrayList<>();
+
+        for (int i = 0; i < values.length; i++) {
+            float value = values[i];
+            arrayList.add(value);
+        }
+
+        Collections.sort(arrayList);
+
+        ArrayList<Integer> a2 = new ArrayList<>();
+
+        for (int i = 0; i < arrayList.size(); i++) {
+            int tickIndex = findTickIndex(arrayList.get(i));
+            if (tickIndex == -1) {
+                if (i == 0) {
+                    tickIndex = 0;
+                } else {
+                    if (a2.get(i - 1) < tickMarks.size() - 1) {
+                        tickIndex = a2.get(i - 1) + 1;
+                    } else {
+                        tickIndex = a2.get(i - 1);
+                    }
+                }
+            }
+            a2.add(tickIndex);
+            setSliderValue(i, tickIndex);
+        }
+
+        for (int i = arrayList.size(); i < sliders.size(); i++) {
+            int tickIndex = 0;
+            if (i == 0) {
+                tickIndex = 0;
+            } else {
+                if (a2.size() == 0) {
+                    a2.add(0);
+                }
+                tickIndex = a2.get(a2.size() - 1);
+            }
+            setSliderValue(i, tickIndex);
+        }
 
     }
 

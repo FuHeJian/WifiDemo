@@ -21,6 +21,7 @@ import com.example.wifidemo1.permission.PermissionUtil;
 import org.shredzone.commons.suncalc.MoonTimes;
 import org.shredzone.commons.suncalc.SunTimes;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -36,7 +37,23 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
     @Override
     public void initView(CompassMainBinding binding, LifecycleOwner lifecycleOwner) {
 
+        binding.content.setSliderNum(4);
 
+        ArrayList<String> datas = new ArrayList<>();
+
+        for (int i = 0; i < 30; i++) {
+            datas.add(String.valueOf(i));
+        }
+
+        binding.content.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        binding.content.setDataList(datas);
+                        binding.content.setSlidersValue(2,8,11);
+                    }
+                }
+        );
 
     }
 

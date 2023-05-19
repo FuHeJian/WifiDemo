@@ -22,22 +22,22 @@ import java.util.Comparator;
  * @author: fuhejian
  * @date: 2023/5/5
  */
-public class MaxMinFourSeekbar extends View {
+public class MaxMinNSeekbar extends View {
 
 
-    public MaxMinFourSeekbar(Context context) {
+    public MaxMinNSeekbar(Context context) {
         this(context, null);
     }
 
-    public MaxMinFourSeekbar(Context context, @Nullable AttributeSet attrs) {
+    public MaxMinNSeekbar(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MaxMinFourSeekbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MaxMinNSeekbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         this(context, attrs, defStyleAttr, 0);
     }
 
-    public MaxMinFourSeekbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public MaxMinNSeekbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
     }

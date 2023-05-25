@@ -21,7 +21,6 @@ import com.example.wifidemo1.permission.PermissionUtil;
 import org.shredzone.commons.suncalc.MoonTimes;
 import org.shredzone.commons.suncalc.SunTimes;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -37,7 +36,7 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
     @Override
     public void initView(CompassMainBinding binding, LifecycleOwner lifecycleOwner) {
 
-        binding.content.setSliderNum(4);
+        /*binding.content.setSliderNum(4);
 
         ArrayList<String> datas = new ArrayList<>();
 
@@ -45,15 +44,18 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
             datas.add(String.valueOf(i));
         }
 
+        //view.post是在测量之后才执行的（如果view还没有开始测量，则会在测量开始的时候在加入到looper messageQueen的队列中,否则直接加入）
         binding.content.post(
                 new Runnable() {
                     @Override
                     public void run() {
                         binding.content.setDataList(datas);
-                        binding.content.setSlidersValue(2,8,11);
+                        binding.content.setSlidersValue(2, 8, 11);
                     }
                 }
-        );
+        );*/
+
+
 
     }
 

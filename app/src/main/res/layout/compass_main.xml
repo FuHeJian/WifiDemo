@@ -12,10 +12,10 @@
         android:layout_height="match_parent"
         >
 
-        <com.example.wifidemo1.customview.MaxMinNSeekbar
+        <com.example.wifidemo1.customview.TestView
             android:id="@+id/content"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="300dp"
             android:paddingEnd="20dp"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
@@ -23,8 +23,9 @@
             app:layout_constraintTop_toTopOf="parent"
             android:background="@color/black"
             >
+        </com.example.wifidemo1.customview.TestView>
 
-        </com.example.wifidemo1.customview.MaxMinNSeekbar>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

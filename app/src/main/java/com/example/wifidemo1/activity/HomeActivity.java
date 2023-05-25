@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModel;
 
 
 import com.example.wifidemo1.App;
+import com.example.wifidemo1.Executors.MyShadow.MyClassLoader;
 import com.example.wifidemo1.activity.base.BaseDataBindingActivity;
 import com.example.wifidemo1.activity.i.InitView;
 import com.example.wifidemo1.activity.impl.HomeActivityInitViewImpl;
@@ -28,6 +29,12 @@ import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.network.PolarisSettings;
 import com.example.wifidemo1.viewmodel.HomeViewModel;
 import com.tencent.mmkv.MMKV;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**
@@ -39,14 +46,14 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
     @SuppressLint("MissingPermission")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ThemeUtil.INSTANCE.setSystemStatusBar(this,true,true);
-        App.GlobalManager.INSTANCE.activitys.put(this,"HomeActivity");
+        ThemeUtil.INSTANCE.setSystemStatusBar(this, true, true);
+        App.GlobalManager.INSTANCE.activitys.put(this, "HomeActivity");
 
         getPermission();
         initMMKV();
 
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(this,CompassActivity.class));
+        intent.setComponent(new ComponentName(this, CompassActivity.class));
         startActivity(intent);
         finish();
 
@@ -57,9 +64,41 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
 
         //wifi配置
         //registerWiFiReceiver()
+//        app-release-unsigned.apk
+        String path = getFilesDir().getAbsolutePath() + File.separator + "hello.apk";
+        try {
+            assetsToAppFilesDir(getAssets().open("hello.apk"), path);
+        } catch (IOException e) {
+            System.out.println();
+        }
+        //需要传递加载宿主apk的classLoader,不然一些类 比如 java.lang.Object会找不到
+        MyClassLoader classLoader = new MyClassLoader(path, null, null, getClassLoader());
+
+        try {
+            String name = "com.tencent.shadow.dynamic.impl.WhiteList";
+            Class a = Class.forName(name, false, classLoader);
+            System.out.println(a);
+        } catch (Exception e) {
+            System.out.println();
+        }
+
     }
 
-    public void initMMKV(){
+    public void assetsToAppFilesDir(InputStream inputStream, String path) throws IOException {
+
+        File file = new File(path);
+
+        if (file.exists()) {
+            file.delete();
+        }
+
+        file.createNewFile();
+
+        FileUtils.copyInputStreamToFile(inputStream, file);
+
+    }
+
+    public void initMMKV() {
         MMKV.initialize(this);
         MMKV mmkv = MMKV.defaultMMKV();
         SharedPreferences downloadedFileNamePath = getSharedPreferences("PolarisSettings", Context.MODE_PRIVATE);
@@ -89,24 +128,13 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
     protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult() {
         return registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::dispatchRegisterForPermissionsResultListener);
     }
+
     /**
      * 获取权限
      */
     private void getPermission() {
-        String[] permissions = {
-                "android.permission.CHANGE_WIFI_STATE",
-                "android.permission.ACCESS_WIFI_STATE",
-                "android.permission.CHANGE_NETWORK_STATE",
-                "android.permission.BLUETOOTH",
-                "android.permission.BLUETOOTH_SCAN",
-                "android.permission.BLUETOOTH_ADMIN",
-                "android.permission.BLUETOOTH_ADVERTISE",
-                "android.permission.BLUETOOTH_CONNECT",
-                "android.permission.ACCESS_FINE_LOCATION",//>=android.os.Build.VERSION_CODES.Q时需申请
-                Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-        };
+        String[] permissions = {"android.permission.CHANGE_WIFI_STATE", "android.permission.ACCESS_WIFI_STATE", "android.permission.CHANGE_NETWORK_STATE", "android.permission.BLUETOOTH", "android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_ADMIN", "android.permission.BLUETOOTH_ADVERTISE", "android.permission.BLUETOOTH_CONNECT", "android.permission.ACCESS_FINE_LOCATION",//>=android.os.Build.VERSION_CODES.Q时需申请
+                Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_COARSE_LOCATION,};
 
         int requestCode = RequestCode.PERMISSIONS;
         ActivityCompat.requestPermissions(this, permissions, requestCode);
@@ -115,11 +143,7 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
     /**
      * 权限授权回调
      */
-    public void onRequestPermissionsResult(
-            int requestCode,
-            String[] permissions,
-            @NonNull int[] grantResults
-    ) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, @NonNull int[] grantResults) {
         for (int i = 0; i < permissions.length; i++) {
             MyLog.printLog(permissions[i] + "授权结果" + (grantResults[i] == PackageManager.PERMISSION_GRANTED));
         }
@@ -132,8 +156,6 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         //this::引用lambda的简化用法
         return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
     }
-
-
 
 
 }

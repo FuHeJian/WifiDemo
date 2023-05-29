@@ -70,4 +70,10 @@ public class TestMethodVisitor extends MethodVisitor {
         super.visitTypeInsn(opcode, type);
     }
 
+
+    @Override
+    public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+        super.visitLocalVariable(name, descriptor, signature, start, end, index);
+    }
+
 }

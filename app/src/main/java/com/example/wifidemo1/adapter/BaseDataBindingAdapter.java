@@ -72,7 +72,7 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ViewDataBinding dataBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), getLayoutId(), parent, false);
+        ViewDataBinding dataBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), getLayoutId(viewType), parent, false);
 
         dataBinding.setLifecycleOwner(mLifecycleOwner);
 
@@ -86,6 +86,11 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
             onBindItem(binding, getItem(position), position);
         }
 
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return 0;
     }
 
     @SuppressLint("MissingPermission")
@@ -156,6 +161,6 @@ public abstract class BaseDataBindingAdapter<T> extends ListAdapter<T, RecyclerV
 
     abstract public void onBindItem(ViewDataBinding binding, T item, int position);
 
-    abstract public @LayoutRes int getLayoutId();
+    abstract public @LayoutRes int getLayoutId(int position);
 
 }

@@ -41,7 +41,7 @@ public class ScaleAdapter extends BaseDataBindingAdapter<String> {
     }
 
     @Override
-    public int getLayoutId() {
+    public int getLayoutId(int position) {
         return R.layout.graduated_item;
     }
 

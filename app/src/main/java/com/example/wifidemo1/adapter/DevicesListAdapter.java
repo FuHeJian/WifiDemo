@@ -477,7 +477,7 @@ public class DevicesListAdapter extends BaseDataBindingAdapter<BluetoothDevice> 
     }
 
     @Override
-    public int getLayoutId() {
+    public int getLayoutId(int position) {
         return R.layout.bluetoothdeviceitem;
     }
 

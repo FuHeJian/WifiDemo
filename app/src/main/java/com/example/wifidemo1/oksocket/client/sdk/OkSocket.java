@@ -72,13 +72,14 @@ public class OkSocket {
      * @return 该参数的连接管理器 {@link IConnectionManager} 连接参数仅作为配置该通道的参配,不影响全局参配
      * @deprecated
      */
+    @Deprecated
     public static IConnectionManager open(ConnectionInfo connectInfo, OkSocketOptions okOptions) {
         return holder.getConnection(connectInfo, okOptions);
     }
 
     /**
      * 开启一个socket通讯通道
-     * Deprecated please use {@link OkSocket#open(String, int,boolean)}@{@link IConnectionManager#option(OkSocketOptions)}
+     * Deprecated please use @{@link IConnectionManager#option(OkSocketOptions)}
      *
      * @param ip        需要连接的主机IPV4地址
      * @param port      需要连接的主机开放的Socket端口号
@@ -86,6 +87,7 @@ public class OkSocket {
      * @return 该参数的连接管理器 {@link IConnectionManager}
      * @deprecated
      */
+    @Deprecated
     public static IConnectionManager open(String ip, int port, OkSocketOptions okOptions) {
         ConnectionInfo info = new ConnectionInfo(ip, port);
         return holder.getConnection(info, okOptions);

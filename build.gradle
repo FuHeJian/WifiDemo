@@ -2,27 +2,11 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '7.4.1' apply false
-    id 'com.android.library' version '7.4.1' apply false
+    id 'com.android.application' version '7.4.2' apply false
+    id 'com.android.library' version '7.4.2' apply false
     id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
 }
 
 dependencies {
-    /*project.afterEvaluate{
-        def artifactType = AndroidArtifacts.ARTIFACT_TYPE
-        registerTransform(TransFormTest.class, noneTransformSpec -> {
-            noneTransformSpec.from.attribute(artifactType,  AndroidArtifacts.ArtifactType.CLASSES.type);
-            noneTransformSpec.to.attribute(artifactType, AndroidArtifacts.ArtifactType.JACOCO_CLASSES.type);
-        })
 
-        registerTransform(TransFormTest.class, noneTransformSpec -> {
-            noneTransformSpec.from.attribute(artifactType,  AndroidArtifacts.ArtifactType.CLASSES_JAR.type);
-            noneTransformSpec.to.attribute(artifactType, AndroidArtifacts.ArtifactType.JACOCO_CLASSES_JAR.type);
-        })
-
-        registerTransform(TransFormTest.class, noneTransformSpec -> {
-            noneTransformSpec.from.attribute(artifactType,  AndroidArtifacts.ArtifactType.ASM_INSTRUMENTED_JARS.type);
-            noneTransformSpec.to.attribute(artifactType, AndroidArtifacts.ArtifactType.JACOCO_ASM_INSTRUMENTED_JARS.type);
-        })
-    }*/
 }

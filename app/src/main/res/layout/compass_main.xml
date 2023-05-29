@@ -9,22 +9,16 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
 
-        <com.example.wifidemo1.customview.TestView
-            android:id="@+id/content"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recy"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="20dp"
-            android:paddingTop="20dp"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:background="@color/black"
-            >
-        </com.example.wifidemo1.customview.TestView>
+            app:layout_constraintTop_toTopOf="parent">
 
+        </androidx.recyclerview.widget.RecyclerView>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

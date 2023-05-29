@@ -19,7 +19,6 @@ import androidx.lifecycle.ViewModel;
 
 
 import com.example.wifidemo1.App;
-import com.example.wifidemo1.Executors.MyShadow.MyClassLoader;
 import com.example.wifidemo1.activity.base.BaseDataBindingActivity;
 import com.example.wifidemo1.activity.i.InitView;
 import com.example.wifidemo1.activity.impl.HomeActivityInitViewImpl;
@@ -57,15 +56,17 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         startActivity(intent);
         finish();
 
-        //TODO
-/*        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/2050c91ec75889d258f3996cfbdaac0d/642ba2ba/video/tos/cn/tos-cn-ve-15c001-alinc2/osAi5NhgDfA84DYbP791l9bAXOnfABYR6LXjEX/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=3261&bt=3261&cs=0&ds=6&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiXo3rzMVJERXpwrbPD-I&mime_type=video_mp4&qs=0&rc=aGQ8PDc3ZTY8OzczOTc8aEBpM2c1ajw6ZjZyaTMzNGkzM0BfYzYtYzVjXzQxNV5jYDY0YSNjcS41cjRfNG5gLS1kLTBzcw%3D%3D&l=202304041100490BEE83299D84D04B67DF&btag=30000","test");
+/*        //TODO
+        VideoActivity.intentTo(this,"http://v26-web.douyinvod.com/2050c91ec75889d258f3996cfbdaac0d/642ba2ba/video/tos/cn/tos-cn-ve-15c001-alinc2/osAi5NhgDfA84DYbP791l9bAXOnfABYR6LXjEX/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=3261&bt=3261&cs=0&ds=6&ft=bvTKJbQQqUYqfJEZao0OW_EklpPiXo3rzMVJERXpwrbPD-I&mime_type=video_mp4&qs=0&rc=aGQ8PDc3ZTY8OzczOTc8aEBpM2c1ajw6ZjZyaTMzNGkzM0BfYzYtYzVjXzQxNV5jYDY0YSNjcS41cjRfNG5gLS1kLTBzcw%3D%3D&l=202304041100490BEE83299D84D04B67DF&btag=30000","test");
 
         finish();*/
 
         //wifi配置
         //registerWiFiReceiver()
 //        app-release-unsigned.apk
-        String path = getFilesDir().getAbsolutePath() + File.separator + "hello.apk";
+
+
+/*        String path = getFilesDir().getAbsolutePath() + File.separator + "hello.apk";
         try {
             assetsToAppFilesDir(getAssets().open("hello.apk"), path);
         } catch (IOException e) {
@@ -80,7 +81,7 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
             System.out.println(a);
         } catch (Exception e) {
             System.out.println();
-        }
+        }*/
 
     }
 

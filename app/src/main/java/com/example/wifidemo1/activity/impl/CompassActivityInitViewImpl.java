@@ -8,12 +8,16 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.wifidemo1.Executors.ExecutorsUtil;
 import com.example.wifidemo1.activity.base.BaseActivity;
 import com.example.wifidemo1.activity.i.InitView;
+import com.example.wifidemo1.activity.impl.adapter.TestAdapter;
 import com.example.wifidemo1.databinding.CompassMainBinding;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.permission.PermissionUtil;
@@ -21,6 +25,7 @@ import com.example.wifidemo1.permission.PermissionUtil;
 import org.shredzone.commons.suncalc.MoonTimes;
 import org.shredzone.commons.suncalc.SunTimes;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -55,6 +60,33 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
                 }
         );*/
 
+
+        binding.recy.setLayoutManager(new LinearLayoutManager(binding.recy.getContext(),LinearLayoutManager.VERTICAL,false));
+
+        TestAdapter adapter = new TestAdapter(new DiffUtil.ItemCallback<String>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
+                return oldItem.equals(newItem);
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull String oldItem, @NonNull String newItem) {
+                return oldItem.equals(newItem);
+            }
+        },lifecycleOwner);
+
+        binding.recy.setAdapter(adapter);
+
+        ArrayList<String> strings = new ArrayList<>();
+        strings.add("hello1");
+        strings.add("hello2");
+        strings.add("hello3");
+        strings.add("hello3");
+        strings.add("hello3");
+        strings.add("hello3");
+        strings.add("hello3");
+        strings.add("hello3");
+        adapter.submitList(strings);
 
 
     }

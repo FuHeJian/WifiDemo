@@ -11,12 +11,12 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="30dp"
         android:background="@drawable/bluetooth_device_item_background"
         >
         <TextView
             android:id="@+id/deviceName"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{device.mDevice.name}"

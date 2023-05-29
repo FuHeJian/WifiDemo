@@ -3,6 +3,7 @@ package com.example.wifidemo1.customview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -366,9 +367,23 @@ public class MaxMinNSeekbar extends View {
     private int color1 = Color.parseColor("#308C4F");
     private int color2 = Color.parseColor("#30798C");
 
+    float[] values = new float[]{
+            1f, 0f, 0f,
+            0f, 1f, 0f,
+            0f, 0f, 1f
+    };
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        //todo matrix test
+        Matrix matrix = new Matrix();
+
+        matrix.setValues(values);
+
+//        canvas.setMatrix(matrix);
+
 
 //        lineMargin = dataList.size() == 1 ? 0 : (getWidth() - getHeight() * dataList.size()) / (dataList.size() - 1);
         lineMargin = dataList.size() == 1 ? 0 : (getWidth() - (int) mVisibleHeight) / (dataList.size() - 1f);
@@ -506,6 +521,9 @@ public class MaxMinNSeekbar extends View {
     private boolean mHasInitialDataList = false;
 
     public void setDataList(ArrayList<String> dataList) {
+
+        System.out.println("setDataList:" + "宽度:" + getWidth());
+
         ArrayList<V> vList = new ArrayList<>();
         for (int i = 0; i < dataList.size(); i++) {
             V v = new V();

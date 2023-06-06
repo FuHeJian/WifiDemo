@@ -3,8 +3,6 @@ package com.example.wifidemo1.fragment.impl;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.net.IpSecManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -12,18 +10,15 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.coordinatorlayout.widget.ViewGroupUtils;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
-import androidx.databinding.library.baseAdapters.BR;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.wifidemo1.App;
-import com.example.wifidemo1.R;
-import com.example.wifidemo1.activity.HomeActivity;
 import com.example.wifidemo1.activity.PolarisUtil;
+import com.example.wifidemo1.activity.base.BaseDataBindingActivity;
 import com.example.wifidemo1.adapter.DevicesListAdapter;
 import com.example.wifidemo1.customview.MyTimer;
 import com.example.wifidemo1.databinding.BottomUpgradeHintBinding;
@@ -35,21 +30,13 @@ import com.example.wifidemo1.network.NetWorkUtil;
 import com.example.wifidemo1.network.PolarisSettings;
 import com.example.wifidemo1.network.retrofit.PolarisNetWork;
 import com.example.wifidemo1.permission.PermissionUtil;
-import com.example.wifidemo1.utils.FileUtil;
 import com.example.wifidemo1.utils.OrderCommunication;
 import com.example.wifidemo1.utils.UpgradeUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.internal.ViewUtils;
-import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.File;
-import java.lang.ref.PhantomReference;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.TimeUnit;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.Nullable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -115,7 +102,7 @@ public class HomeFragmentInitViewImpl implements FragmentInitView<HomeFragmentBi
 
             //注册寻找polaris_2d3b07的该广播
             String bleStartName = "polaris";
-            PolarisUtil.INSTANCE.registerBlueTooth((HomeActivity) binding.getRoot().getContext(), adapter, bleStartName, bluetoothAdapter -> {
+            PolarisUtil.INSTANCE.registerBlueTooth((BaseDataBindingActivity) binding.getRoot().getContext(), adapter, bleStartName, bluetoothAdapter -> {
                 adapter.stopTimer();//必须调用
                 canClick = true;
                 Toast.makeText(binding.getRoot().getContext(), "蓝牙扫描结束！", Toast.LENGTH_SHORT).show();

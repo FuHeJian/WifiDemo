@@ -1,41 +1,53 @@
 package com.example.wifidemo1.activity.impl;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.wifidemo1.Executors.ExecutorsUtil;
 import com.example.wifidemo1.activity.base.BaseActivity;
 import com.example.wifidemo1.activity.i.InitView;
 import com.example.wifidemo1.activity.impl.adapter.TestAdapter;
+import com.example.wifidemo1.customview.MyCollapsingLayout;
 import com.example.wifidemo1.databinding.CompassMainBinding;
 import com.example.wifidemo1.log.MyLog;
 import com.example.wifidemo1.permission.PermissionUtil;
 
+import org.apache.commons.io.FileUtils;
 import org.shredzone.commons.suncalc.MoonTimes;
 import org.shredzone.commons.suncalc.SunTimes;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
 /**
  * com.example.wifidemo1.activity.impl
+ * 照片访问显示，APPBarLayout折叠
  */
 public class CompassActivityInitViewImpl implements InitView<CompassMainBinding> {
 
     private boolean isCompute = false;
-
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -60,34 +72,116 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
                 }
         );*/
 
+        StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
 
-        binding.recy.setLayoutManager(new LinearLayoutManager(binding.recy.getContext(),LinearLayoutManager.VERTICAL,false));
+        binding.recy.setLayoutManager(gridLayoutManager);
 
-        TestAdapter adapter = new TestAdapter(new DiffUtil.ItemCallback<String>() {
+        TestAdapter adapter = new TestAdapter(new DiffUtil.ItemCallback<Uri>() {
             @Override
-            public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
-                return oldItem.equals(newItem);
+            public boolean areItemsTheSame(@NonNull Uri oldItem, @NonNull Uri newItem) {
+                return oldItem.toString().equals(newItem.toString());
             }
 
             @Override
-            public boolean areContentsTheSame(@NonNull String oldItem, @NonNull String newItem) {
-                return oldItem.equals(newItem);
+            public boolean areContentsTheSame(@NonNull Uri oldItem, @NonNull Uri newItem) {
+                return oldItem.toString().equals(newItem.toString());
             }
-        },lifecycleOwner);
+        }, lifecycleOwner);
 
         binding.recy.setAdapter(adapter);
 
-        ArrayList<String> strings = new ArrayList<>();
-        strings.add("hello1");
-        strings.add("hello2");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        adapter.submitList(strings);
+        adapter.startTimer();
 
+        //扫描图片
+        String rootPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+        File file = new File(rootPath);
+        ArrayList<String> ss = new ArrayList<>();
+
+        Collection<File> files1 = FileUtils.listFiles(file, new String[]{"jpg", "png"}, true);
+
+        for (File file1 : files1) {
+            ss.add(file1.getAbsolutePath());
+        }
+
+        rootPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath();
+        file = new File(rootPath);
+
+        files1 = FileUtils.listFiles(file, new String[]{"jpg", "png"}, true);
+
+        for (File file1 : files1) {
+            ss.add(file1.getAbsolutePath());
+        }
+        String[] paths = new String[ss.size()];
+
+        String order = MediaStore.Images.Media.DATE_MODIFIED + " DESC";
+        MediaScannerConnection.scanFile(binding.getRoot().getContext(), ss.toArray(new String[]{}), new String[]{"*/*"}, new MediaScannerConnection.MediaScannerConnectionClient() {
+            @Override
+            public void onMediaScannerConnected() {
+
+            }
+
+            @Override
+            public void onScanCompleted(String path, Uri uri) {
+
+                String[] projections = new String[]{MediaStore.Images.Media.DATE_MODIFIED, MediaStore.Images.Media.DISPLAY_NAME,};
+
+                Cursor query = binding.getRoot().getContext().getContentResolver().query(uri, projections, null, null, order);
+                if (query.moveToNext()) {
+                    adapter.addItem(uri);
+
+                }
+            }
+        });
+
+        //显示title
+        binding.collapse.setOnScrimsShowListener(new MyCollapsingLayout.OnScrimsShowListener() {
+            @Override
+            public void onScrimsShowChange(MyCollapsingLayout collapsingToolbarLayout, boolean isScrimsShow) {
+                animateTitle(binding.title, isScrimsShow, binding.title.getHeight());
+            }
+        });
+    }
+
+    private ValueAnimator animator;
+
+    private void animateTitle(View target, Boolean show, Integer h) {
+
+        if (animator == null) {
+
+            animator = new ValueAnimator();
+
+            animator.setInterpolator(new LinearInterpolator());
+
+            animator.setDuration(500);
+
+            animator.setRepeatCount(0);
+
+            animator.setFloatValues(0, 1);
+
+        }
+
+        animator.removeAllUpdateListeners();
+
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(@NonNull ValueAnimator animation) {
+                if (h == 0) {
+                    return;
+                }
+                Float value = (Float) animation.getAnimatedValue();
+                int t = Math.abs((int) (h * 1f * ((show ? 1f : 0f) - value)));
+                target.setTop(t);
+                target.setBottom(t + h);
+//                System.out.println("shown" + show + ",t:" + t + ",height:" + h);
+
+            }
+        });
+
+        if (animator.isRunning()) {
+            animator.cancel();
+        }
+
+        animator.start();
 
     }
 

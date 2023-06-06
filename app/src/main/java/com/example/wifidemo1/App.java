@@ -65,6 +65,7 @@ public class App extends Application {
         super.onCreate();
         GlobalManager.INSTANCE.app = this;
         WifiUtilHelper.INSTANCE.updateNetWorkForNet(this);
+
     }
 
 }

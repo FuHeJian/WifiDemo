@@ -23,6 +23,7 @@ import retrofit2.http.HeaderMap;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
+import retrofit2.http.Streaming;
 
 /**
  * @author: fuhejian
@@ -117,6 +118,9 @@ public class MyNetWork {
         @FormUrlEncoded
         @POST("{path}")
         Call<ResponseBody> post(@Path("path") String path, @FieldMap Map<String, String> params, @HeaderMap Map<String, String> headers);
+
+        @Streaming
+        Call<ResponseBody> getInputStream(@Path("path") String path, @QueryMap Map<String, String> params, @HeaderMap Map<String, String> headers);
 
     }
 

@@ -10,8 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import androidx.core.app.ActivityCompat;
@@ -52,7 +50,7 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         initMMKV();
 
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(this, CompassActivity.class));
+        intent.setComponent(new ComponentName(this, TestActivity.class));
         startActivity(intent);
         finish();
 
@@ -125,11 +123,6 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         return new HomeActivityInitViewImpl();
     }
 
-    @Override
-    protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult() {
-        return registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::dispatchRegisterForPermissionsResultListener);
-    }
-
     /**
      * 获取权限
      */
@@ -150,13 +143,5 @@ public class HomeActivity extends BaseDataBindingActivity<ActivityMainBinding> {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
-    @NonNull
-    @Override
-    protected ActivityResultLauncher<Intent> createRegisterForActivityResult() {
-        //this::引用lambda的简化用法
-        return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
-    }
-
 
 }

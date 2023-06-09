@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cn.bingoogolapple.badgeview.BGABadgeTextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:badge_draggable="true"
+    app:badge_gravity="rightCenter"
+    app:badge_isResumeTravel="true"
+    tools:ignore="MissingDefaultResource"
+    android:gravity="center"
+    >
+
+</cn.bingoogolapple.badgeview.BGABadgeTextView>

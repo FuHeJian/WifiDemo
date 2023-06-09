@@ -51,7 +51,6 @@ public class HolyBrokenLine2 extends View {
 
     public HolyBrokenLine2(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-
         init();
     }
 

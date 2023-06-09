@@ -6,6 +6,7 @@ import android.util.ArraySet;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModel;
@@ -38,9 +39,13 @@ public abstract class BaseActivity extends AppCompatActivity {
      * @return ActivityResultLauncher
      */
     @NotNull
-    abstract protected ActivityResultLauncher<Intent> createRegisterForActivityResult();
+    protected ActivityResultLauncher<Intent> createRegisterForActivityResult(){
+        return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
+    }
 
-    abstract protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult();
+    protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult(){
+        return registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::dispatchRegisterForPermissionsResultListener);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

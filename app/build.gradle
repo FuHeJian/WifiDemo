@@ -166,4 +166,18 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+/*    //litho布局优化
+    implementation 'com.facebook.litho:litho-core:0.47.0'
+    implementation 'com.facebook.litho:litho-core-kotlin:0.47.0'
+    implementation 'com.facebook.litho:litho-widget:0.47.0'
+    implementation 'com.facebook.litho:litho-widget-kotlin:0.47.0'
+    annotationProcessor 'com.facebook.litho:litho-processor:0.47.0'
+    implementation 'com.facebook.soloader:soloader:0.10.5'*/
+
+    //indicator
+    implementation 'com.github.hackware1993:MagicIndicator:1.7.0'
+
+    implementation 'com.github.bingoogolapple.BGABadgeView-Android:api:1.2.0'
+    annotationProcessor 'com.github.bingoogolapple.BGABadgeView-Android:compiler:1.2.0'
+
 }

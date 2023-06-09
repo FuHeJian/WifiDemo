@@ -1,10 +1,7 @@
 package com.example.wifidemo1.activity;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 
@@ -20,19 +17,8 @@ public class CompassActivity extends BaseDataBindingActivity<CompassMainBinding>
 
     @NonNull
     @Override
-    protected ActivityResultLauncher<Intent> createRegisterForActivityResult() {
-        return registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::dispatchRegisterForActivityResultListener);
-    }
-
-    @NonNull
-    @Override
     public CompassMainBinding createDataBinding() {
         return CompassMainBinding.inflate(getLayoutInflater());
-    }
-
-    @Override
-    protected ActivityResultLauncher<String[]> createRegisterForPermissionsResult() {
-        return registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::dispatchRegisterForPermissionsResultListener);
     }
 
     @SuppressLint({"MissingPermission", "NewApi"})

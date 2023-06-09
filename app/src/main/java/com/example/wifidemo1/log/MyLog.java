@@ -11,4 +11,8 @@ public class MyLog {
         Log.i(TAG,str);
     }
 
+    public static void printError(String str){
+        Log.e(TAG,str);
+    }
+
 }

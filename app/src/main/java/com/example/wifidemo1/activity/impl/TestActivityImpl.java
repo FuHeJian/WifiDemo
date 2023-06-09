@@ -1,9 +1,11 @@
 package com.example.wifidemo1.activity.impl;
 
+import android.graphics.Color;
+
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.wifidemo1.activity.i.InitView;
-import com.example.wifidemo1.customview.BasePickScrollBar;
+import com.example.wifidemo1.customview.BasePickVerticalScrollBar;
 import com.example.wifidemo1.databinding.TestBinding;
 
 import java.util.ArrayList;
@@ -16,13 +18,15 @@ public class TestActivityImpl implements InitView<TestBinding> {
 
     @Override
     public void initView(TestBinding binding, LifecycleOwner lifecycleOwner) {
-        binding.content.setSliderNum(2);
+        binding.content.setSliderNum(4);
+        ;
+        binding.content.setColorList(Color.argb(0.6f, 0, 0, 1), Color.argb(0.6f, 0, 1, 0));
 
         ArrayList<String> datas = new ArrayList<>();
 
         ArrayList<Float> values = new ArrayList<>();
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 5; i++) {
             String s = String.valueOf(i);
             datas.add(s);
             values.add(Float.parseFloat(s));
@@ -34,14 +38,14 @@ public class TestActivityImpl implements InitView<TestBinding> {
                     @Override
                     public void run() {
                         binding.content.setDataList(datas, values);
-                        binding.content.setSlidersValue(2, 4);
+                        binding.content.setSlidersValue(49, 49, 49, 49);
                     }
                 }
         );
 
-        binding.content.setSelectListener(new BasePickScrollBar.SelectListener() {
+        binding.content.setSelectListener(new BasePickVerticalScrollBar.SelectListener() {
             @Override
-            public void onValueSelect(int position, BasePickScrollBar.Slider slider) {
+            public void onValueSelect(BasePickVerticalScrollBar.Slider slider) {
                 binding.title.setText(slider.tickMark.rawValue);
             }
         });

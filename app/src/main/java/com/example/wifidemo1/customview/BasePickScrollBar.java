@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -450,20 +449,9 @@ public class BasePickScrollBar extends View {
     private int color1 = Color.parseColor("#308C4F");
     private int color2 = Color.parseColor("#30798C");
 
-    float[] values = new float[]{
-            1f, 0f, 0f,
-            0f, 1f, 0f,
-            0f, 0f, 1f
-    };
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-        //todo matrix test
-        Matrix matrix = new Matrix();
-
-        matrix.setValues(values);
 
 //      lineMargin = dataList.size() == 1 ? 0 : (getWidth() - getHeight() * dataList.size()) / (dataList.size() - 1);
         lineMargin = dataList.size() == 1 ? 0 : (getWidth() - (int) mVisibleHeight) / (dataList.size() - 1f);

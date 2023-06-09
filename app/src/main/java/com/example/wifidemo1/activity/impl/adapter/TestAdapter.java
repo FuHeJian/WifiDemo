@@ -24,7 +24,7 @@ public class TestAdapter extends BaseDataBindingAdapter<String> {
     }
 
     @Override
-    public int getLayoutId() {
+    public int getLayoutId(int position) {
         return R.layout.bluetoothdeviceitem;
     }
 

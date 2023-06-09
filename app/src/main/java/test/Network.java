@@ -68,7 +68,7 @@ public class Network {
     }
 
     public static JsonArray getSymBolKLine_2h_GateIo(String symbol) throws IOException {
-        String url = "spot/candlesticks?currency_pair=" + symbol + "&limit=50&interval=1h";
+        String url = "spot/candlesticks?currency_pair=" + symbol + "&limit=55&interval=5m";
         return mGson.fromJson(retrofit_gateIo_service.getSymBolKLine_4h_GateIo(url).execute().body().string(), JsonArray.class);
     }
 

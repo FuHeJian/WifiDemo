@@ -53,7 +53,6 @@
 
         <activity
             android:name=".activity.CompassActivity"
-            android:screenOrientation="sensorLandscape"
             >
 
         </activity>

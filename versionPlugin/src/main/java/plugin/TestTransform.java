@@ -115,7 +115,8 @@ public class TestTransform extends Transform {
     }
 
 
-    private static void transformDir(File input, File dest) throws Exception {
+    private static void transformDir(File input, File dest) throws Exception
+    {
         if (dest.exists()) {
             FileUtils.forceDelete(dest);
         }

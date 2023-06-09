@@ -17,16 +17,19 @@ import java.util.concurrent.TimeUnit
 val calc = SarCalculator()
 fun main() {
 
-    Schedulers.io().scheduleDirect {
-        binanceMain()
-    }
+    /*    Schedulers.io().scheduleDirect {
+            binanceMain()
+        }*/
 
-    Schedulers.io().scheduleDirect {
-        gateIoMain()
-    }
+    gateIoMain()
+
+    /*    Schedulers.io().scheduleDirect {
+            gateIoMain()
+        }*/
 
     while (true) {
-        Thread.sleep(Long.MAX_VALUE - 1)
+        Thread.sleep(30 * 60 * 1000)
+//        Thread.yield()
     }
 
 }
@@ -40,9 +43,14 @@ fun binanceMain() {
     Schedulers.io().schedulePeriodicallyDirect({
         SYMBOLS_JsonArr.asList().forEach {
             getSymbolData_2H(it.asString)
+            Thread.sleep(200)
         }
-    }, 0, 2 * 60, TimeUnit.MINUTES)
+    }, 0, 2, TimeUnit.HOURS)
 
+    while (true) {
+        Thread.sleep(30 * 60 * 1000)
+//        Thread.yield()
+    }
 
 }
 
@@ -55,9 +63,7 @@ class SarCalculator {
         low: FloatArray,
         time: ArrayList<String>,
         symbol: String,
-        acf: Float,
-        rate: String,
-        amount: ArrayList<Float>
+        acf: Float
     ): FloatArray? {
         if (high.size == 0 || low.size == 0) return null;
         accelerationFactor = acf;
@@ -74,7 +80,6 @@ class SarCalculator {
         sar[0] = sar0
         af[0] = af0
         var downTimes = 0;
-        var isSend = false;
 
         var upTimes = 0;
 
@@ -101,16 +106,18 @@ class SarCalculator {
 
             } else if (!uptrend && high[i] > sar[i]) { // 趋势转换为上涨
                 upTimes++
-                if (i == length - 1) {
-                    isSend = true
+                if (i == length - 1 && changeTime > downtrendNum) {
                     sendMessageToWeChat(
                         "上涨：" + symbol + "，变化几次：" + changeTime + ",下跌持续时间：" + downtrendNum + ",时间：" + time.get(
                             i
-                        ) + ",交易量倍数：" + rate + ",当前交易量是否最近最高点：" + (amount.max() == amount.get(
-                            i
-                        ))
+                        )
                     )
                 }
+//                println(
+//                    "上涨：" + symbol + "，变化几次：" + changeTime + ",下跌持续时间：" + downtrendNum + ",时间：" + time.get(
+//                        i
+//                    )
+//                )
                 uptrend = true
                 sar[i] = ep // SAR重置为极值
                 ep = low[i] // 极值更新为新低
@@ -126,9 +133,7 @@ class SarCalculator {
             }
         }
 
-        /*        if (Math.abs(downTimes - upTimes) < 10 && isSend) {
-                    sendMessageToWeChat(symbol + "->" + "上涨时间：" + upTimes + "->" + "下跌时间：" + downTimes + "->" + "变化次数：" + changeTime + "下跌持续时间：" + downtrendNum)
-                }*/
+//        sendMessageToWeChat(symbol + "->"+"上涨时间："+upTimes + "->"+"下跌时间："+downTimes + "->"+"变化次数："+changeTime)
 
         return sar
     }
@@ -191,49 +196,26 @@ fun getSymbolData_2H(symbol: String) {
         val high = ArrayList<Float>()
         val low = ArrayList<Float>()
         val time = ArrayList<String>()
-        val amount = ArrayList<Float>()
         val d = ArrayList<Float>();
 
         val json = Network.getSymBolKLine_2h(symbol)
 
-        var asList = json.asList()
-
-        for (i in 0 until asList.size - 1) {
-            val it = asList.get(i)
+        for (it in json.asList()) {
             val t = sdf.format(Date(it.asJsonArray.get(0).asLong));
+            if (t.contains("-28")) break;
             time.add(t)
             var h = it.asJsonArray.get(2).asFloat;
             var l = it.asJsonArray.get(3).asFloat;
             high.add(h)
             low.add(l)
             d.add(h - l);
-            amount.add(it.asJsonArray.get(5).asFloat)
         }
-
 
 //        val acf = d.max()
 
         val acf = 0.02f
-        var rate = 0f;
-        if (amount.size > 2) {
-            if (amount.get(amount.size - 2) == 0f) {
-                rate = 2f;
-            } else {
-                rate = amount.get(amount.size - 1) / amount.get(amount.size - 2)
-            }
-        }
 
-        if (rate > 2f && high.get(high.size - 1) / low.get(high.size - 1) < 1.1) {
-            calc.calculate(
-                high.toFloatArray(),
-                low.toFloatArray(),
-                time,
-                "币安->" + symbol,
-                acf,
-                String.format("%.2f", rate),
-                amount
-            )
-        }
+        calc.calculate(high.toFloatArray(), low.toFloatArray(), time, symbol, acf)
 
     } catch (e: Exception) {
 
@@ -252,11 +234,20 @@ fun gateIoMain() {
                 } catch (e: Exception) {
                     println()
                 }
+                Thread.sleep(150)
             }
-        }, 0, 60, TimeUnit.MINUTES)
+
+        }, 0, 2, TimeUnit.HOURS)
+
 
     } catch (e: java.lang.Exception) {
         println()
+    }
+
+
+    while (true) {
+        Thread.sleep(30 * 60 * 1000)
+//        Thread.yield()
     }
 
 }
@@ -265,24 +256,21 @@ fun getSymbolData_2H_GATE_IO(symbol: String) {
 
     val high = ArrayList<Float>()
     val low = ArrayList<Float>()
-    val amount = ArrayList<Float>()
     val time = ArrayList<String>()
     val d = ArrayList<Float>();
 
     val json = Network.getSymBolKLine_2h_GateIo(symbol)
 
-    var asList = json.asList()
-
-    for (i in 0 until asList.size - 1) {
-        val it = asList.get(i)
+    for (it in json.asList()) {
         if (it.asJsonArray.size() > 0) {
             val t = sdf.format(Date(it.asJsonArray.get(0).asLong * 1000))
             time.add(t)
+            if (t.contains("06-10"))
+                break
             var h = it.asJsonArray.get(3).asFloat;
             var l = it.asJsonArray.get(4).asFloat;
             high.add(h)
             low.add(l)
-            amount.add(it.asJsonArray.get(1).asFloat)
             d.add(h - l);
         } else {
             println()
@@ -292,25 +280,8 @@ fun getSymbolData_2H_GATE_IO(symbol: String) {
 //        val acf = d.max()
 
     val acf = 0.02f
-    var rate = 0f;
-    if (amount.size > 2) {
-        if (amount.get(amount.size - 2) == 0f) {
-            rate = 2f;
-        } else {
-            rate = amount.get(amount.size - 1) / amount.get(amount.size - 2)
-        }
-    }
-    if (rate >= 2f && high.get(high.size - 1) / low.get(high.size - 1) < 1.1) {
-        calc.calculate(
-            high.toFloatArray(),
-            low.toFloatArray(),
-            time,
-            "GateIo->" + symbol,
-            acf,
-            String.format("%.2f", rate),
-            amount
-        )
-    }
+
+    calc.calculate(high.toFloatArray(), low.toFloatArray(), time, "GateIo->" + symbol, acf)
 
 }
 
@@ -322,7 +293,7 @@ fun getGateIoSYMBOLS(): ArrayList<String> {
             if (!it.asJsonObject.get("trade_status").asString.contains("un")) {
                 var symbol =
                     it.asJsonObject.get("id").asString
-                if (symbol.contains("USDT") && !symbol.contains("3S") && !symbol.contains("3L")) {
+                if (symbol.contains("USDT")) {
                     arr.add(symbol)
                 }
             }

@@ -7,13 +7,29 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
+import android.text.method.BaseKeyListener;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.blankj.utilcode.util.KeyboardUtils;
 import com.example.wifidemo1.Executors.ExecutorsUtil;
 import com.example.wifidemo1.activity.base.BaseActivity;
 import com.example.wifidemo1.activity.i.InitView;
@@ -41,53 +57,18 @@ public class CompassActivityInitViewImpl implements InitView<CompassMainBinding>
     @Override
     public void initView(CompassMainBinding binding, LifecycleOwner lifecycleOwner) {
 
-        /*binding.content.setSliderNum(4);
 
-        ArrayList<String> datas = new ArrayList<>();
-
-        for (int i = 0; i < 30; i++) {
-            datas.add(String.valueOf(i));
-        }
-
-        //view.post是在测量之后才执行的（如果view还没有开始测量，则会在测量开始的时候在加入到looper messageQueen的队列中,否则直接加入）
-        binding.content.post(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        binding.content.setDataList(datas);
-                        binding.content.setSlidersValue(2, 8, 11);
-                    }
-                }
-        );*/
-
-
-        binding.recy.setLayoutManager(new LinearLayoutManager(binding.recy.getContext(),LinearLayoutManager.VERTICAL,false));
-
-        TestAdapter adapter = new TestAdapter(new DiffUtil.ItemCallback<String>() {
+        View.OnLayoutChangeListener onLayoutChangeListener = new View.OnLayoutChangeListener() {
             @Override
-            public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
-                return oldItem.equals(newItem);
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                Animation animation = new TranslateAnimation(binding.input1.getWidth(), 0f, 0f, 0f);
+                animation.setDuration(600L);
+                animation.setInterpolator(new AccelerateInterpolator());
+                v.setAnimation(animation);
             }
+        };
 
-            @Override
-            public boolean areContentsTheSame(@NonNull String oldItem, @NonNull String newItem) {
-                return oldItem.equals(newItem);
-            }
-        },lifecycleOwner);
-
-        binding.recy.setAdapter(adapter);
-
-        ArrayList<String> strings = new ArrayList<>();
-        strings.add("hello1");
-        strings.add("hello2");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        strings.add("hello3");
-        adapter.submitList(strings);
-
+        binding.input1.addOnLayoutChangeListener(onLayoutChangeListener);
 
     }
 

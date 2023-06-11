@@ -18,7 +18,7 @@ public class TestActivityImpl implements InitView<TestBinding> {
 
     @Override
     public void initView(TestBinding binding, LifecycleOwner lifecycleOwner) {
-        binding.content.setSliderNum(4);
+        /*binding.content.setSliderNum(4);
         ;
         binding.content.setColorList(Color.argb(0.6f, 0, 0, 1), Color.argb(0.6f, 0, 1, 0));
 
@@ -48,7 +48,7 @@ public class TestActivityImpl implements InitView<TestBinding> {
             public void onValueSelect(BasePickVerticalScrollBar.Slider slider) {
                 binding.title.setText(slider.tickMark.rawValue);
             }
-        });
+        });*/
 
 
     }

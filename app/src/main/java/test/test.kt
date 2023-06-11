@@ -133,7 +133,7 @@ class SarCalculator {
             }
         }
 
-//        sendMessageToWeChat(symbol + "->"+"上涨时间："+upTimes + "->"+"下跌时间："+downTimes + "->"+"变化次数："+changeTime)
+//        println(symbol + "->"+"上涨时间："+upTimes + "->"+"下跌时间："+downTimes + "->"+"变化次数："+changeTime)
 
         return sar
     }
@@ -265,7 +265,7 @@ fun getSymbolData_2H_GATE_IO(symbol: String) {
         if (it.asJsonArray.size() > 0) {
             val t = sdf.format(Date(it.asJsonArray.get(0).asLong * 1000))
             time.add(t)
-            if (t.contains("06-10"))
+            if (t.contains("06-11"))
                 break
             var h = it.asJsonArray.get(3).asFloat;
             var l = it.asJsonArray.get(4).asFloat;
